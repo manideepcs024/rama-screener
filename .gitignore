@@ -1,27 +1,19 @@
-# Configuration files with sensitive data
-config.yaml
+# secrets — never commit
 .env
-rag_service.py
-test_order.py
-test_fno_order.py
 
-# Persisted runtime state
-state/
-ngrok
+# runtime output (positions, alerts, journal)
+output/*.json
 
-# Output folder containing trade logs and other artifacts
-output/
-
-# Cache folder for downloaded news articles
-news_cache/
-
-# Python virtual environment folder
-trade_bot/
+# Python
 __pycache__/
 *.pyc
-*.py[co]
+*.pyo
+*.egg-info/
 
-# IDE-specific folders
-.idea/
-.vscode/
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
