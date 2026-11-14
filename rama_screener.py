@@ -562,6 +562,8 @@ st.markdown(
     .main .block-container { overflow-x: hidden !important; max-width: 100% !important; }
     /* Mobile column labels: hidden on desktop */
     .mh { display: none; }
+    /* Override Streamlit's -1rem bottom margin on column wrappers */
+    .st-emotion-cache-1y4lfdl { margin-bottom: 0 !important; }
 
     /* ── Global mobile layout ─────────────────────────────────── */
     @media (max-width: 768px) {
