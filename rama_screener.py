@@ -3444,8 +3444,10 @@ def _check_login() -> bool:
     return False
 
 
-if _check_login():
-    main()
+# Login disabled — uncomment to re-enable:
+# if _check_login():
+#     main()
+main()
 
 # â”€â”€ auto-refresh (non-blocking) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # st_autorefresh triggers a client-side page reload every REFRESH_SECONDS.
