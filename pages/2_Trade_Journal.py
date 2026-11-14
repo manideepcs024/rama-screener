@@ -327,7 +327,7 @@ st.caption("Add trades from Zerodha Kite app, Dhan, Upstox, or any other account
 manual_entries = _load_manual()
 
 # ── add new entry form ────────────────────────────────────────────────────────
-with st.expander("➕ Add New Manual Trade", expanded=len(manual_entries) == 0):
+with st.expander("➕ Add New Manual Trade", expanded=True):
     mc1, mc2, mc3 = st.columns(3)
     with mc1:
         m_symbol   = st.text_input("Symbol", placeholder="e.g. RELIANCE", key="m_sym").upper().strip()
