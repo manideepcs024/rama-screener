@@ -116,65 +116,66 @@ df = pd.DataFrame(rows) if rows else pd.DataFrame()
 st.title("📓 Trade Journal & History")
 
 if df.empty:
-    st.info("No trades recorded yet. Start trading from the main screener.")
-    st.stop()
+    st.info("No screener trades recorded yet. Start trading from the main screener.")
 
 # ── summary stats ─────────────────────────────────────────────────────────────
-closed   = df[df["status"] == "closed"]
-open_pos = df[df["status"] == "open"]
-paper    = df[df["paper"] == True]
-live     = df[df["paper"] == False]
+if not df.empty:
+    closed   = df[df["status"] == "closed"]
+    open_pos = df[df["status"] == "open"]
+    paper    = df[df["paper"] == True]
+    live     = df[df["paper"] == False]
 
-closed_with_pnl = closed[closed["pnl"].notna()]
-wins  = closed_with_pnl[closed_with_pnl["pnl"] > 0]
-loss  = closed_with_pnl[closed_with_pnl["pnl"] < 0]
-total_pnl    = closed_with_pnl["pnl"].sum()
-win_rate     = len(wins) / len(closed_with_pnl) * 100 if len(closed_with_pnl) > 0 else 0
-avg_win      = wins["pnl"].mean() if len(wins) > 0 else 0
-avg_loss     = loss["pnl"].mean() if len(loss) > 0 else 0
-rr_ratio     = abs(avg_win / avg_loss) if avg_loss != 0 else 0
+    closed_with_pnl = closed[closed["pnl"].notna()]
+    wins  = closed_with_pnl[closed_with_pnl["pnl"] > 0]
+    loss  = closed_with_pnl[closed_with_pnl["pnl"] < 0]
+    total_pnl    = closed_with_pnl["pnl"].sum()
+    win_rate     = len(wins) / len(closed_with_pnl) * 100 if len(closed_with_pnl) > 0 else 0
+    avg_win      = wins["pnl"].mean() if len(wins) > 0 else 0
+    avg_loss     = loss["pnl"].mean() if len(loss) > 0 else 0
+    rr_ratio     = abs(avg_win / avg_loss) if avg_loss != 0 else 0
 
-col1, col2, col3, col4, col5, col6 = st.columns(6)
-_pnl_color = "green" if total_pnl >= 0 else "red"
-col1.metric("Total Trades",  len(df))
-col2.metric("Open",          len(open_pos))
-col3.metric("Closed",        len(closed_with_pnl))
-col4.metric("Win Rate",      f"{win_rate:.0f}%",
-            delta=f"{len(wins)}W / {len(loss)}L")
-col5.metric("Total P&L",     f"₹{total_pnl:+,.0f}",
-            delta=f"Avg win ₹{avg_win:+,.0f}")
-col6.metric("Reward:Risk",   f"{rr_ratio:.2f}x",
-            delta="avg win / avg loss")
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    _pnl_color = "green" if total_pnl >= 0 else "red"
+    col1.metric("Total Trades",  len(df))
+    col2.metric("Open",          len(open_pos))
+    col3.metric("Closed",        len(closed_with_pnl))
+    col4.metric("Win Rate",      f"{win_rate:.0f}%",
+                delta=f"{len(wins)}W / {len(loss)}L")
+    col5.metric("Total P&L",     f"₹{total_pnl:+,.0f}",
+                delta=f"Avg win ₹{avg_win:+,.0f}")
+    col6.metric("Reward:Risk",   f"{rr_ratio:.2f}x",
+                delta="avg win / avg loss")
 
-st.markdown("---")
-
-# ── filters ───────────────────────────────────────────────────────────────────
-fc1, fc2, fc3 = st.columns([2, 2, 2])
-with fc1:
-    _filter_status = st.radio("Status", ["All", "Open", "Closed"],
-                              horizontal=True, key="jf_status")
-with fc2:
-    _filter_type = st.radio("Type", ["All", "Live", "Paper"],
-                            horizontal=True, key="jf_type")
-with fc3:
-    _filter_note = st.checkbox("Only with journal notes", key="jf_note")
+    st.markdown("---")
 
 fdf = df.copy()
-if _filter_status == "Open":
-    fdf = fdf[fdf["status"] == "open"]
-elif _filter_status == "Closed":
-    fdf = fdf[fdf["status"] == "closed"]
-if _filter_type == "Live":
-    fdf = fdf[fdf["paper"] == False]
-elif _filter_type == "Paper":
-    fdf = fdf[fdf["paper"] == True]
-if _filter_note:
-    fdf = fdf[fdf["note"].str.strip() != ""]
+# ── filters ───────────────────────────────────────────────────────────────────
+if not df.empty:
+    fc1, fc2, fc3 = st.columns([2, 2, 2])
+    with fc1:
+        _filter_status = st.radio("Status", ["All", "Open", "Closed"],
+                                  horizontal=True, key="jf_status")
+    with fc2:
+        _filter_type = st.radio("Type", ["All", "Live", "Paper"],
+                                horizontal=True, key="jf_type")
+    with fc3:
+        _filter_note = st.checkbox("Only with journal notes", key="jf_note")
 
-st.caption(f"Showing {len(fdf)} of {len(df)} trades")
+    if _filter_status == "Open":
+        fdf = fdf[fdf["status"] == "open"]
+    elif _filter_status == "Closed":
+        fdf = fdf[fdf["status"] == "closed"]
+    if _filter_type == "Live":
+        fdf = fdf[fdf["paper"] == False]
+    elif _filter_type == "Paper":
+        fdf = fdf[fdf["paper"] == True]
+    if _filter_note:
+        fdf = fdf[fdf["note"].str.strip() != ""]
+
+    st.caption(f"Showing {len(fdf)} of {len(df)} trades")
 
 # ── trade cards ───────────────────────────────────────────────────────────────
-for _, row in fdf.iterrows():
+for _, row in fdf.iterrows() if not fdf.empty else [].__iter__():
     sym    = row["symbol"]
     jkey   = row["jkey"]
     is_open   = row["status"] == "open"
@@ -467,31 +468,32 @@ if manual_entries:
 else:
     st.info("No manual entries yet. Click **➕ Add New Manual Trade** above.")
 
-# ── export section ────────────────────────────────────────────────────────────
-st.markdown("---")
-st.subheader("📥 Export")
-exp1, exp2 = st.columns(2)
+if not df.empty:
+    # ── export section ────────────────────────────────────────────────────────
+    st.markdown("---")
+    st.subheader("📥 Export")
+    exp1, exp2 = st.columns(2)
 
-export_df = fdf[["symbol", "name", "status", "paper", "qty",
-                  "buy_price", "sell_price", "pnl", "pnl_pct",
-                  "buy_time", "sell_time", "note"]].copy()
-export_df.columns = ["Symbol", "Name", "Status", "Paper", "Qty",
-                     "Buy ₹", "Sell ₹", "P&L ₹", "P&L %",
-                     "Buy Time", "Sell Time", "Journal Note"]
+    export_df = fdf[["symbol", "name", "status", "paper", "qty",
+                      "buy_price", "sell_price", "pnl", "pnl_pct",
+                      "buy_time", "sell_time", "note"]].copy()
+    export_df.columns = ["Symbol", "Name", "Status", "Paper", "Qty",
+                         "Buy ₹", "Sell ₹", "P&L ₹", "P&L %",
+                         "Buy Time", "Sell Time", "Journal Note"]
 
-with exp1:
-    st.download_button(
-        "⬇️ Download as CSV",
-        data=export_df.to_csv(index=False),
-        file_name=f"trade_journal_{datetime.now().strftime('%Y%m%d')}.csv",
-        mime="text/csv",
-        use_container_width=True,
-    )
-with exp2:
-    st.download_button(
-        "⬇️ Download as JSON",
-        data=json.dumps(positions, indent=2, default=str),
-        file_name=f"trade_history_{datetime.now().strftime('%Y%m%d')}.json",
-        mime="application/json",
-        use_container_width=True,
-    )
+    with exp1:
+        st.download_button(
+            "⬇️ Download as CSV",
+            data=export_df.to_csv(index=False),
+            file_name=f"trade_journal_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    with exp2:
+        st.download_button(
+            "⬇️ Download as JSON",
+            data=json.dumps(positions, indent=2, default=str),
+            file_name=f"trade_history_{datetime.now().strftime('%Y%m%d')}.json",
+            mime="application/json",
+            use_container_width=True,
+        )
