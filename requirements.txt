@@ -1,34 +1,32 @@
-#Core Trading and API Interaction
+# Core
 kiteconnect==4.0.0
-openalgo
 pandas==2.2.2
 numpy==2.0.0
-pandas-ta-classic
-TA-Lib
-openpyxl==3.1.2
+requests==2.32.3
+python-dotenv>=1.0.0
 
-#AI and Sentiment Analysis
+# Market data
+yfinance>=0.2.40
+
+# Technical analysis (pure Python — no C binary needed)
+pandas-ta-classic
+
+# Web / Streamlit
+streamlit
+streamlit-autorefresh>=1.0.1
+
+# Alerts
+python-telegram-bot==13.15
+tweepy>=4.14.0
+
+# Sentiment / news
 google-generativeai==0.7.1
 newsapi-python==0.2.7
 textblob==0.18.0.post0
-youtube-transcript-api>=0.6.2
-
-#Networking and Web Scraping
-aiohttp==3.9.5
-requests==2.32.3
 beautifulsoup4==4.12.3
 lxml>=5.2.0
-python-telegram-bot==13.15
 
-#Global market data for the pre-market trend module (market_trend.py)
-yfinance>=0.2.40
-
-#Configuration
+# Misc
+openpyxl==3.1.2
 PyYAML==6.0.1
-python-dotenv>=1.0.0
-#Web Framework
-fastapi
-uvicorn
-streamlit
-streamlit-autorefresh>=1.0.1
-tweepy>=4.14.0
+aiohttp==3.9.5
