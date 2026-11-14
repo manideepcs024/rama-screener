@@ -1,5 +1,5 @@
-"""
-RAMA-MANIMINDSMONEY — NSE Intraday Momentum Screener + One-Click Trading
+﻿"""
+RAMA-MANIMINDSMONEY â€” NSE Intraday Momentum Screener + One-Click Trading
 
 Run:
     streamlit run rama_screener.py
@@ -8,8 +8,8 @@ Credentials from .env:
     ZERODHA_API_KEY, ZERODHA_API_SECRET, ZERODHA_ACCESS_TOKEN
 
 Data sources:
-    - Kite Connect  → real-time LTP, volume, % change  (live, every 60 s)
-    - yfinance      → fundamentals + 20-day avg volume  (cached daily)
+    - Kite Connect  â†’ real-time LTP, volume, % change  (live, every 60 s)
+    - yfinance      â†’ fundamentals + 20-day avg volume  (cached daily)
 
 Trading features:
     - Buy/Sell buttons per row  |  Initial SL 3%  |  Target 3%
@@ -44,7 +44,7 @@ import strategy_mailer as mailer
 _log = logging.getLogger("rama_screener")
 logging.basicConfig(level=logging.INFO)
 
-# ── constants ─────────────────────────────────────────────────────────────────
+# â”€â”€ constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 ENV_PATH         = Path(__file__).resolve().parent / ".env"
 load_dotenv(ENV_PATH, override=True)   # load early so os.getenv picks up .env values
 POSITIONS_FILE   = Path(__file__).resolve().parent / "output" / "rama_positions.json"
@@ -66,7 +66,7 @@ _DEF_INST_MIN    = 30.0
 _DEF_MIN_PCT     = 2.0
 _DEF_VOL_SURGE   = 1.5
 
-# ── Telegram ──────────────────────────────────────────────────────────────────
+# â”€â”€ Telegram â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def _tg_creds() -> tuple[str, str]:
     """Read token + chat_id directly from .env file each call, bypassing os.environ cache."""
     vals: dict[str, str] = {}
@@ -114,7 +114,7 @@ def send_telegram(text: str) -> bool:
     return any_ok
 
 
-# ── WhatsApp via Green API ─────────────────────────────────────────────────────
+# â”€â”€ WhatsApp via Green API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Setup:
 #   1. Register at console.green-api.com and create an instance
 #   2. Scan QR code with your WhatsApp to link the instance
@@ -147,7 +147,7 @@ def _wa_enabled() -> bool:
 
 
 def _md_to_plain(text: str) -> str:
-    """Strip Telegram Markdown (*bold*, _italic_, \. escapes) → plain text."""
+    """Strip Telegram Markdown (*bold*, _italic_, \. escapes) â†’ plain text."""
     import re
     text = re.sub(r"(?<!\w)\*([^*]+)\*(?!\w)", r"\1", text)   # *bold*
     text = re.sub(r"(?<!\w)_([^_]+)_(?!\w)",   r"\1", text)   # _italic_
@@ -156,7 +156,7 @@ def _md_to_plain(text: str) -> str:
 
 
 def _phone_to_chat_id(phone: str) -> str:
-    """Convert +919887818001 → 919887818001@c.us (Green API chatId format)."""
+    """Convert +919887818001 â†’ 919887818001@c.us (Green API chatId format)."""
     digits = "".join(c for c in phone if c.isdigit())
     return f"{digits}@c.us"
 
@@ -193,11 +193,11 @@ def send_alert(text: str) -> bool:
     return send_telegram(text) if _tg_enabled() else False
 
 
-# ── Twitter / X ───────────────────────────────────────────────────────────────
+# â”€â”€ Twitter / X â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Setup:
-#   1. developer.twitter.com → create project + app (Free tier = 1500 tweets/month)
-#   2. App permissions → Read and Write
-#   3. Keys and Tokens → generate all 4 keys
+#   1. developer.twitter.com â†’ create project + app (Free tier = 1500 tweets/month)
+#   2. App permissions â†’ Read and Write
+#   3. Keys and Tokens â†’ generate all 4 keys
 #   4. Add to .env:
 #        TWITTER_API_KEY=xxx
 #        TWITTER_API_SECRET=xxx
@@ -243,23 +243,23 @@ def _tw_enabled() -> bool:
 def _build_tweet(sym: str, name: str, ltp: float, pct: float, vol_surge: float,
                  score: float, sl: float, target: float,
                  strategy: str, paper: bool) -> str:
-    """Compose a tweet ≤ 280 chars with signal details and hashtags."""
-    tag       = "📄 PAPER" if paper else "🔴 LIVE"
-    prob      = "🟢" if score >= 70 else ("🟡" if score >= 40 else "🔴")
+    """Compose a tweet â‰¤ 280 chars with signal details and hashtags."""
+    tag       = "ðŸ“„ PAPER" if paper else "ðŸ”´ LIVE"
+    prob      = "ðŸŸ¢" if score >= 70 else ("ðŸŸ¡" if score >= 40 else "ðŸ”´")
     strat_tags = _STRATEGY_HASHTAGS.get(strategy, ["#StockAlert"])
     sym_tag    = f"#{sym}"
-    # build hashtag line — keep total tweet under 280
+    # build hashtag line â€” keep total tweet under 280
     all_tags   = [sym_tag] + strat_tags + _COMMON_HASHTAGS
     tag_line   = " ".join(all_tags)
 
     body = (
-        f"🏦 MANIMINDSMONEY | RAMA  {tag}\n"
+        f"ðŸ¦ MANIMINDSMONEY | RAMA  {tag}\n"
         f"\n"
-        f"{prob} ${sym} — {name[:22]}\n"
-        f"CMP ₹{ltp:,.2f}  {pct:+.1f}%  Vol {vol_surge:.1f}×  Score {score:.0f}\n"
+        f"{prob} ${sym} â€” {name[:22]}\n"
+        f"CMP â‚¹{ltp:,.2f}  {pct:+.1f}%  Vol {vol_surge:.1f}Ã—  Score {score:.0f}\n"
         f"\n"
-        f"🎯 Target ₹{target:,.2f}\n"
-        f"🛑 SL      ₹{sl:,.2f}\n"
+        f"ðŸŽ¯ Target â‚¹{target:,.2f}\n"
+        f"ðŸ›‘ SL      â‚¹{sl:,.2f}\n"
         f"\n"
     )
     # trim tag line if total exceeds 280
@@ -344,23 +344,23 @@ def _build_pnl_reply(kite) -> str:
         r_sign = "+" if realised   >= 0 else ""
         u_sign = "+" if unrealised >= 0 else ""
         t_sign = "+" if total      >= 0 else ""
-        t_icon = "🟢" if total >= 0 else "🔴"
+        t_icon = "ðŸŸ¢" if total >= 0 else "ðŸ”´"
 
         lines = [
-            "🏦 *MANIMINDSMONEY | RAMA*",
-            "─" * 28,
-            f"💰 *P&L SNAPSHOT — {datetime.now():%d %b %Y %H:%M}*",
-            "─" * 28,
-            f"📗 Day Booked P&L:  *{r_sign}₹{realised:,.0f}*",
-            f"📊 MTM (Open):       *{u_sign}₹{unrealised:,.0f}*",
-            f"{t_icon} *Total Day P&L:   {t_sign}₹{total:,.0f}*",
-            "─" * 28,
+            "ðŸ¦ *MANIMINDSMONEY | RAMA*",
+            "â”€" * 28,
+            f"ðŸ’° *P&L SNAPSHOT â€” {datetime.now():%d %b %Y %H:%M}*",
+            "â”€" * 28,
+            f"ðŸ“— Day Booked P&L:  *{r_sign}â‚¹{realised:,.0f}*",
+            f"ðŸ“Š MTM (Open):       *{u_sign}â‚¹{unrealised:,.0f}*",
+            f"{t_icon} *Total Day P&L:   {t_sign}â‚¹{total:,.0f}*",
+            "â”€" * 28,
         ]
 
         # individual open positions
         open_pos = [p for p in net_pos if int(p.get("quantity", 0)) != 0]
         if open_pos:
-            lines.append("📋 *Open Positions:*")
+            lines.append("ðŸ“‹ *Open Positions:*")
             for p in open_pos:
                 _sym  = p.get("tradingsymbol", "?")
                 _qty  = int(p.get("quantity", 0))
@@ -368,11 +368,11 @@ def _build_pnl_reply(kite) -> str:
                 _ltp  = float(p.get("last_price", 0) or 0)
                 _pnl  = float(p.get("pnl", 0) or 0)
                 _unrl = float(p.get("unrealised", 0) or 0)
-                _icon = "🟢" if _pnl >= 0 else "🔴"
+                _icon = "ðŸŸ¢" if _pnl >= 0 else "ðŸ”´"
                 _sign = "+" if _pnl >= 0 else ""
                 lines.append(
-                    f"{_icon} *{_sym}*  Qty:{_qty}  Avg:₹{_avg:.1f}  LTP:₹{_ltp:.1f}  "
-                    f"P&L:{_sign}₹{_pnl:,.0f}"
+                    f"{_icon} *{_sym}*  Qty:{_qty}  Avg:â‚¹{_avg:.1f}  LTP:â‚¹{_ltp:.1f}  "
+                    f"P&L:{_sign}â‚¹{_pnl:,.0f}"
                 )
         else:
             lines.append("_No open positions_")
@@ -381,25 +381,25 @@ def _build_pnl_reply(kite) -> str:
         closed = [p for p in day_pos if int(p.get("quantity", 0)) == 0
                   and float(p.get("realised", 0) or 0) != 0]
         if closed:
-            lines.append("─" * 28)
-            lines.append("✅ *Closed Today:*")
+            lines.append("â”€" * 28)
+            lines.append("âœ… *Closed Today:*")
             for p in closed:
                 _sym  = p.get("tradingsymbol", "?")
                 _real = float(p.get("realised", 0) or 0)
-                _icon = "🟢" if _real >= 0 else "🔴"
+                _icon = "ðŸŸ¢" if _real >= 0 else "ðŸ”´"
                 _sign = "+" if _real >= 0 else ""
-                lines.append(f"{_icon} *{_sym}*  Booked: {_sign}₹{_real:,.0f}")
+                lines.append(f"{_icon} *{_sym}*  Booked: {_sign}â‚¹{_real:,.0f}")
 
         return "\n".join(lines)
 
     except Exception as e:
-        return f"⚠️ Could not fetch P&L: {e}"
+        return f"âš ï¸ Could not fetch P&L: {e}"
 
 
 def check_telegram_commands(kite) -> None:
     """
     Poll Telegram for new messages. Supported commands (case-insensitive):
-      pnl / /pnl  →  reply with live Zerodha P&L snapshot
+      pnl / /pnl  â†’  reply with live Zerodha P&L snapshot
     Runs at most once every 15 seconds to avoid rate-limiting.
     """
     if not _tg_enabled():
@@ -432,33 +432,33 @@ def tg_signal(sym: str, name: str, cmp: float, sl: float, target: float,
     """Send a BUY signal message to Telegram."""
     sl_pct  = (cmp - sl)     / cmp * 100
     tgt_pct = (target - cmp) / cmp * 100
-    prob    = "🟢 HIGH" if score >= 70 else ("🟡 MEDIUM" if score >= 40 else "🔴 LOW")
-    tag     = "📄 PAPER" if paper else "🔴 LIVE"
+    prob    = "ðŸŸ¢ HIGH" if score >= 70 else ("ðŸŸ¡ MEDIUM" if score >= 40 else "ðŸ”´ LOW")
+    tag     = "ðŸ“„ PAPER" if paper else "ðŸ”´ LIVE"
     ind15   = get_15min_indicators(sym)
     rsi_15  = ind15["rsi_15"]
     vwap_15 = ind15["vwap_15"]
     av15    = ind15["above_vwap_15"]
     vwap_line = (
-        f"📐 VWAP (15m): ₹{vwap_15:,.2f}  {'✅ Above' if av15 else '❌ Below'}\n"
+        f"ðŸ“ VWAP (15m): â‚¹{vwap_15:,.2f}  {'âœ… Above' if av15 else 'âŒ Below'}\n"
         if av15 is not None else ""
     )
     msg = (
-        f"🏦 *MANIMINDSMONEY | RAMA*\n"
-        f"{'─'*28}\n"
-        f"📊 *SIGNAL — {sym}*\n"
+        f"ðŸ¦ *MANIMINDSMONEY | RAMA*\n"
+        f"{'â”€'*28}\n"
+        f"ðŸ“Š *SIGNAL â€” {sym}*\n"
         f"_{name}_\n"
-        f"{'─'*28}\n"
-        f"📍 CMP:        ₹{cmp:,.2f}\n"
-        f"🎯 Target:     ₹{target:,.2f}  _(+{tgt_pct:.1f}%)_\n"
-        f"🛑 Stop Loss:  ₹{sl:,.2f}  _(-{sl_pct:.1f}%)_\n"
-        f"📦 Vol Surge:  {vol_surge:.1f}×\n"
-        f"📉 RSI (15m):  {rsi_15:.1f}\n"
+        f"{'â”€'*28}\n"
+        f"ðŸ“ CMP:        â‚¹{cmp:,.2f}\n"
+        f"ðŸŽ¯ Target:     â‚¹{target:,.2f}  _(+{tgt_pct:.1f}%)_\n"
+        f"ðŸ›‘ Stop Loss:  â‚¹{sl:,.2f}  _(-{sl_pct:.1f}%)_\n"
+        f"ðŸ“¦ Vol Surge:  {vol_surge:.1f}Ã—\n"
+        f"ðŸ“‰ RSI (15m):  {rsi_15:.1f}\n"
         f"{vwap_line}"
-        f"📈 Score:      {score:.0f}/100\n"
-        f"⚡ Probability: {prob}\n"
-        f"🎲 Strategy:   {strategy}\n"
-        f"{'─'*28}\n"
-        f"{tag}  ·  {datetime.now():%d %b %Y %H:%M}"
+        f"ðŸ“ˆ Score:      {score:.0f}/100\n"
+        f"âš¡ Probability: {prob}\n"
+        f"ðŸŽ² Strategy:   {strategy}\n"
+        f"{'â”€'*28}\n"
+        f"{tag}  Â·  {datetime.now():%d %b %Y %H:%M}"
     )
     send_alert(msg)
 
@@ -473,7 +473,7 @@ def tg_top5(final: pd.DataFrame, strategy: str, paper: bool) -> None:
     if not _tg_enabled() or final.empty:
         return
 
-    # ── build signal score ────────────────────────────────────────────────────
+    # â”€â”€ build signal score â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     df = final[final["pct_change"] >= 2.0].copy()
     if df.empty:
         return
@@ -483,7 +483,7 @@ def tg_top5(final: pd.DataFrame, strategy: str, paper: bool) -> None:
                   df["pct_change"] / _max_pct * 40)
     top5 = df.nlargest(10, "_sig").reset_index(drop=True)
 
-    # ── rate-limit: 5 min interval + de-dup by symbol list ───────────────────
+    # â”€â”€ rate-limit: 5 min interval + de-dup by symbol list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     _now     = time.time()
     _last_ts = st.session_state.get("_tg_top5_ts", 0)
     _last_syms = st.session_state.get("_tg_top5_syms", [])
@@ -494,14 +494,14 @@ def tg_top5(final: pd.DataFrame, strategy: str, paper: bool) -> None:
     st.session_state["_tg_top5_ts"]   = _now
     st.session_state["_tg_top5_syms"] = _cur_syms
 
-    # ── build message ─────────────────────────────────────────────────────────
-    tag   = "📄 PAPER" if paper else "🔴 LIVE"
+    # â”€â”€ build message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    tag   = "ðŸ“„ PAPER" if paper else "ðŸ”´ LIVE"
     lines = [
-        f"🏦 *MANIMINDSMONEY | RAMA*",
-        "─" * 30,
-        f"🏆 *TOP 10 SIGNALS — {strategy[:20]}*",
+        f"ðŸ¦ *MANIMINDSMONEY | RAMA*",
+        "â”€" * 30,
+        f"ðŸ† *TOP 10 SIGNALS â€” {strategy[:20]}*",
         f"_{datetime.now():%d %b %Y %H:%M}_  |  {tag}",
-        "─" * 30,
+        "â”€" * 30,
     ]
     for i, row in top5.iterrows():
         sym    = row["symbol"]
@@ -512,18 +512,18 @@ def tg_top5(final: pd.DataFrame, strategy: str, paper: bool) -> None:
         vol    = row["vol_surge"]
         pct    = row["pct_change"]
         score  = row.get("score", 0)
-        prob   = "🟢" if score >= 70 else ("🟡" if score >= 40 else "🔴")
+        prob   = "ðŸŸ¢" if score >= 70 else ("ðŸŸ¡" if score >= 40 else "ðŸ”´")
         ind15  = get_15min_indicators(sym)
         rsi15  = ind15["rsi_15"]
         av15   = ind15["above_vwap_15"]
-        vwap_tag = ("✅" if av15 else "❌") if av15 is not None else "—"
+        vwap_tag = ("âœ…" if av15 else "âŒ") if av15 is not None else "â€”"
         lines.append(
             f"{i+1}\\. {prob} *{sym}* _{name}_\n"
-            f"   CMP ₹{cmp:,.2f}  |  Chg {pct:+.1f}%  |  Vol {vol:.1f}×\n"
+            f"   CMP â‚¹{cmp:,.2f}  |  Chg {pct:+.1f}%  |  Vol {vol:.1f}Ã—\n"
             f"   RSI(15m) {rsi15:.0f}  |  VWAP {vwap_tag}  |  Score {score:.0f}\n"
-            f"   🎯 ₹{tgt:,.2f}  🛑 ₹{sl:,.2f}"
+            f"   ðŸŽ¯ â‚¹{tgt:,.2f}  ðŸ›‘ â‚¹{sl:,.2f}"
         )
-        lines.append("─" * 30)   # separator after each signal
+        lines.append("â”€" * 30)   # separator after each signal
     send_alert("\n".join(lines))
 
 
@@ -532,30 +532,46 @@ def tg_exit(sym: str, name: str, entry: float, exit_price: float,
     """Send SL-hit / target-hit / manual-exit alert to Telegram."""
     pnl      = (exit_price - entry) * qty
     pnl_pct  = (exit_price - entry) / entry * 100
-    icon     = "✅" if pnl >= 0 else "🔴"
-    tag      = "📄 PAPER" if paper else "🔴 LIVE"
+    icon     = "âœ…" if pnl >= 0 else "ðŸ”´"
+    tag      = "ðŸ“„ PAPER" if paper else "ðŸ”´ LIVE"
     reason_u = reason.upper()
     msg = (
-        f"🏦 *MANIMINDSMONEY | RAMA*\n"
-        f"{'─'*28}\n"
-        f"{icon} *EXIT — {sym}*\n"
+        f"ðŸ¦ *MANIMINDSMONEY | RAMA*\n"
+        f"{'â”€'*28}\n"
+        f"{icon} *EXIT â€” {sym}*\n"
         f"_{name}_  |  _{reason_u}_\n"
-        f"{'─'*28}\n"
-        f"💰 Exit:   ₹{exit_price:,.2f}\n"
-        f"📌 Entry:  ₹{entry:,.2f}\n"
-        f"📦 Qty:    {qty}\n"
-        f"{'🟢' if pnl>=0 else '🔴'} P&L:   ₹{pnl:+,.2f}  _({pnl_pct:+.1f}%)_\n"
-        f"{'─'*28}\n"
-        f"{tag}  ·  {datetime.now():%d %b %Y %H:%M}"
+        f"{'â”€'*28}\n"
+        f"ðŸ’° Exit:   â‚¹{exit_price:,.2f}\n"
+        f"ðŸ“Œ Entry:  â‚¹{entry:,.2f}\n"
+        f"ðŸ“¦ Qty:    {qty}\n"
+        f"{'ðŸŸ¢' if pnl>=0 else 'ðŸ”´'} P&L:   â‚¹{pnl:+,.2f}  _({pnl_pct:+.1f}%)_\n"
+        f"{'â”€'*28}\n"
+        f"{tag}  Â·  {datetime.now():%d %b %Y %H:%M}"
     )
     send_alert(msg)
 
 
-# ── page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="RAMA-MANIMINDSMONEY", page_icon="📈", layout="wide")
+# â”€â”€ page config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+st.set_page_config(page_title="RAMA-MANIMINDSMONEY", page_icon="ðŸ“ˆ", layout="wide")
 
 st.markdown(
-    "<style>#flonnect-my-app { display: none !important; }</style>",
+    """<style>
+    #flonnect-my-app { display: none !important; }
+
+    /* â”€â”€ Global mobile layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    @media (max-width: 768px) {
+        /* Full width layout */
+        .block-container { padding: 0.5rem 0.5rem !important; }
+        /* Metric tiles smaller */
+        div[data-testid="stMetric"] { padding: 4px !important; }
+        div[data-testid="stMetric"] label { font-size: 10px !important; }
+        div[data-testid="stMetric"] div[data-testid="stMetricValue"] { font-size: 14px !important; }
+        /* Account banner wraps */
+        div[style*="display:flex"] { flex-wrap: wrap !important; }
+        /* Tabs font */
+        button[data-baseweb="tab"] { font-size: 11px !important; padding: 4px 8px !important; }
+    }
+    </style>""",
     unsafe_allow_html=True,
 )
 
@@ -563,48 +579,48 @@ st.markdown(
     """
     <h1 style='text-align:center;color:#1a73e8;letter-spacing:3px;
                font-family:monospace;padding-bottom:2px'>
-    📈 &nbsp; RAMA-MANIMINDSMONEY
+    ðŸ“ˆ &nbsp; RAMA-MANIMINDSMONEY
     </h1>
     <p style='text-align:center;color:#888;margin-top:0;font-size:14px'>
-    NSE Intraday Momentum Screener &nbsp;·&nbsp; Real-time via Kite Connect
+    NSE Intraday Momentum Screener &nbsp;Â·&nbsp; Real-time via Kite Connect
     </p>
     <hr style='border:1px solid #eee;margin-bottom:4px'>
     """,
     unsafe_allow_html=True,
 )
 
-# ── session state init ────────────────────────────────────────────────────────
+# â”€â”€ session state init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if "positions" not in st.session_state:
     st.session_state.positions = {}   # {symbol: position_dict}
 
-# ── sidebar ───────────────────────────────────────────────────────────────────
+# â”€â”€ sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 with st.sidebar:
-    st.header("⚙️ Settings")
+    st.header("âš™ï¸ Settings")
 
-    PAPER_TRADE = st.toggle("📄 Paper Trade Mode", value=True,
+    PAPER_TRADE = st.toggle("ðŸ“„ Paper Trade Mode", value=True,
                             help="OFF = live Kite orders. ON = simulated only.")
     if PAPER_TRADE:
-        st.info("Paper trade ON — no real orders placed.")
+        st.info("Paper trade ON â€” no real orders placed.")
     else:
-        st.warning("⚠️ LIVE mode — real orders will be placed!")
+        st.warning("âš ï¸ LIVE mode â€” real orders will be placed!")
 
     st.subheader("Universe")
     UNIVERSE_CHOICE = st.selectbox(
         "Stock universe",
-        ["Nifty F&O", "Futures – Current Month", "Futures – Next Month",
+        ["Nifty F&O", "Futures â€“ Current Month", "Futures â€“ Next Month",
          "Nifty 500", "All NSE Cash"],
         help="F&O = ~180 liquid stocks. Futures = stocks with active futures contracts (lot size as default qty). Nifty 500 = broad market.",
     )
     if UNIVERSE_CHOICE == "Nifty F&O":
-        st.caption("~180 F&O stocks — most liquid, options-tradeable.")
-    elif UNIVERSE_CHOICE == "Futures – Current Month":
-        st.caption("Stock futures expiring this month — qty defaults to lot size.")
-    elif UNIVERSE_CHOICE == "Futures – Next Month":
-        st.caption("Stock futures expiring next month — qty defaults to lot size.")
+        st.caption("~180 F&O stocks â€” most liquid, options-tradeable.")
+    elif UNIVERSE_CHOICE == "Futures â€“ Current Month":
+        st.caption("Stock futures expiring this month â€” qty defaults to lot size.")
+    elif UNIVERSE_CHOICE == "Futures â€“ Next Month":
+        st.caption("Stock futures expiring next month â€” qty defaults to lot size.")
     elif UNIVERSE_CHOICE == "All NSE Cash":
-        st.warning("⚠️ ~1800 stocks — first fundamental load may take 2-3 min (cached after).")
+        st.warning("âš ï¸ ~1800 stocks â€” first fundamental load may take 2-3 min (cached after).")
 
-    # ── strategy selector ─────────────────────────────────────────────────────
+    # â”€â”€ strategy selector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     st.subheader("Strategy")
     STRATEGY = st.selectbox(
         "Select strategy",
@@ -622,28 +638,28 @@ with st.sidebar:
         key="k_strategy",
     )
 
-    # ── strategy descriptions ─────────────────────────────────────────────────
+    # â”€â”€ strategy descriptions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     _STRATEGY_DESC = {
         "Swing Trade (3-5 day)":
-            "High-probability 3-5 day setup: EMA aligned + RSI 50-65 + volume + near 52W high + ADX trend — sorted by Swing Score.",
+            "High-probability 3-5 day setup: EMA aligned + RSI 50-65 + volume + near 52W high + ADX trend â€” sorted by Swing Score.",
         "Buying Pressure":
-            "65%+ of last 10 days were up-candles AND today is up — consistent accumulation based on actual traded volume, not order book.",
+            "65%+ of last 10 days were up-candles AND today is up â€” consistent accumulation based on actual traded volume, not order book.",
         "Momentum (already moving)":
-            "% change ≥2% AND volume surge ≥1.5× — stocks already in motion.",
+            "% change â‰¥2% AND volume surge â‰¥1.5Ã— â€” stocks already in motion.",
         "Pre-Breakout (coiling)":
-            "BB Squeeze OR NR7 OR VCP OR Inside Bar — compression before the move.",
+            "BB Squeeze OR NR7 OR VCP OR Inside Bar â€” compression before the move.",
         "VCP Setup":
-            "Volatility Contraction Pattern — 3 successive daily range contractions.",
+            "Volatility Contraction Pattern â€” 3 successive daily range contractions.",
         "Inside Bar":
-            "Today's range inside yesterday's — spring loaded for a directional break.",
+            "Today's range inside yesterday's â€” spring loaded for a directional break.",
         "Range Breakout (5-day)":
-            "Close broke above the 5-day high with volume — short-term momentum.",
+            "Close broke above the 5-day high with volume â€” short-term momentum.",
         "Custom (manual filters)":
             "Configure every filter individually below.",
     }
     st.caption(_STRATEGY_DESC[STRATEGY])
 
-    # ── strategy sets the PATTERN flags (OR logic in filter) ─────────────────
+    # â”€â”€ strategy sets the PATTERN flags (OR logic in filter) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     _S = STRATEGY
     USE_BB_SQUEEZE     = _S in ("Pre-Breakout (coiling)",)
     USE_NR7            = _S in ("Pre-Breakout (coiling)",)
@@ -659,15 +675,15 @@ with st.sidebar:
     if _S == "Custom (manual filters)":
         st.subheader("Pattern Signals (OR)")
         USE_BB_SQUEEZE     = st.toggle("BB Squeeze",                     value=False, key="k_bbs")
-        USE_NR7            = st.toggle("NR7 — Narrowest Range 7d",       value=False, key="k_nr7")
-        USE_NEAR_DAY_HIGH  = st.toggle("Near day's high (≤0.5%)",        value=False, key="k_ndh")
+        USE_NR7            = st.toggle("NR7 â€” Narrowest Range 7d",       value=False, key="k_nr7")
+        USE_NEAR_DAY_HIGH  = st.toggle("Near day's high (â‰¤0.5%)",        value=False, key="k_ndh")
         USE_TIGHT_INTRADAY = st.toggle("Tight intraday range (<1.5%)",   value=False, key="k_tir")
-        USE_SETUP_RSI      = st.toggle("RSI building (45–60)",           value=False, key="k_sri")
+        USE_SETUP_RSI      = st.toggle("RSI building (45â€“60)",           value=False, key="k_sri")
         USE_INSIDE_BAR     = st.toggle("Inside Bar",                     value=False, key="k_ib")
         USE_RANGE_BO       = st.toggle("Range Breakout 5D",              value=False, key="k_rbo")
         USE_VCP            = st.toggle("VCP",                            value=False, key="k_vcp")
 
-    # ── technical filter — always visible for all strategies ─────────────────
+    # â”€â”€ technical filter â€” always visible for all strategies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Widget keys are scoped to the strategy so defaults reset when strategy
     # changes (Streamlit ignores value= for existing keys; a new key forces reset).
     _sk = _S.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "")
@@ -683,7 +699,7 @@ with st.sidebar:
     MIN_PCT_CHANGE = st.slider("Min price change %", 0.5, 10.0, _DEF_MIN_PCT,  0.5,
                                disabled=not USE_PCT_FILTER, key=f"k_pct_val_{_sk}")
     USE_VOL_FILTER = st.toggle("Enable volume surge filter",  value=_vol_default, key=f"k_vol_on_{_sk}")
-    VOL_SURGE_MIN  = st.slider("Min volume surge ×",  1.0,  5.0, _DEF_VOL_SURGE, 0.25,
+    VOL_SURGE_MIN  = st.slider("Min volume surge Ã—",  1.0,  5.0, _DEF_VOL_SURGE, 0.25,
                                disabled=not USE_VOL_FILTER, key=f"k_vol_val_{_sk}")
     USE_RSI_FILTER = st.toggle("Enable RSI range filter",     value=_rsi_def,     key=f"k_rsi_on_{_sk}")
     RSI_RANGE      = st.slider("RSI range", 0, 100, _rsi_rng_def, 1,
@@ -699,12 +715,12 @@ with st.sidebar:
                                 help="% of last 10 days + today that were up-candles. 65%+ = buyers dominating") / 100.0
 
     st.subheader("EMA Filter")
-    st.caption("Price must be above selected EMAs (AND logic — all ticked must pass)")
+    st.caption("Price must be above selected EMAs (AND logic â€” all ticked must pass)")
     USE_EMA21  = st.toggle("Above 21 EMA",  value=_ema21_def,  key=f"k_ema21_{_sk}")
     USE_EMA50  = st.toggle("Above 50 EMA",  value=_ema50_def,  key=f"k_ema50_{_sk}")
     USE_EMA200 = st.toggle("Above 200 EMA", value=_ema200_def, key=f"k_ema200_{_sk}")
     if USE_EMA21 or USE_EMA50 or USE_EMA200:
-        st.caption("⚠️ EMA data needs 1y yfinance history — cached daily after first load.")
+        st.caption("âš ï¸ EMA data needs 1y yfinance history â€” cached daily after first load.")
 
     st.subheader("News & Results Filter")
     USE_NEWS_FILTER      = st.toggle("Positive news sentiment only",
@@ -714,7 +730,7 @@ with st.sidebar:
                                      value=False, key=f"k_results_{_sk}",
                                      help="Keeps stocks that announced quarterly earnings recently")
     if USE_NEWS_FILTER or USE_RESULTS_FILTER:
-        st.caption("⏳ News data cached 2 h — first load fetches headlines per stock.")
+        st.caption("â³ News data cached 2 h â€” first load fetches headlines per stock.")
 
     st.subheader("Fundamental Filter")
     USE_FUNDAMENTAL   = st.toggle("Enable fundamental filter", value=False)
@@ -731,40 +747,40 @@ with st.sidebar:
     if _tg_enabled():
         _, _cid_raw = _tg_creds()
         _n_rcpt = len([c for c in _cid_raw.split(",") if c.strip()])
-        st.success(f"✅ Telegram connected ({_n_rcpt} recipient{'s' if _n_rcpt != 1 else ''})")
+        st.success(f"âœ… Telegram connected ({_n_rcpt} recipient{'s' if _n_rcpt != 1 else ''})")
         st.caption("Add more IDs: TELEGRAM_CHAT_ID=id1,id2,id3 in .env")
     else:
-        st.warning("⚠️ Set TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID in .env")
-        st.caption("Get token from @BotFather · Chat ID from @userinfobot")
+        st.warning("âš ï¸ Set TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID in .env")
+        st.caption("Get token from @BotFather Â· Chat ID from @userinfobot")
     # WhatsApp status
     if _wa_enabled():
         _wa_inst, _, _wa_phone = _wa_creds()
         _n_wa = len([p for p in _wa_phone.split(",") if p.strip()])
-        st.success(f"✅ WhatsApp (Green API) connected — instance {_wa_inst} · {_n_wa} number{'s' if _n_wa!=1 else ''}")
-        st.caption("GREENAPI_INSTANCE · GREENAPI_TOKEN · WHATSAPP_PHONE in .env")
+        st.success(f"âœ… WhatsApp (Green API) connected â€” instance {_wa_inst} Â· {_n_wa} number{'s' if _n_wa!=1 else ''}")
+        st.caption("GREENAPI_INSTANCE Â· GREENAPI_TOKEN Â· WHATSAPP_PHONE in .env")
     else:
-        st.info("💬 WhatsApp alerts: add Green API keys to .env  (console.green-api.com)")
+        st.info("ðŸ’¬ WhatsApp alerts: add Green API keys to .env  (console.green-api.com)")
         st.caption("GREENAPI_INSTANCE=710722800566  GREENAPI_TOKEN=<token>  WHATSAPP_PHONE=+91XXXXXXXXXX")
 
     # Twitter / X status
     if _tw_enabled():
-        st.success("✅ Twitter / X connected")
-        st.caption("TWITTER_API_KEY · API_SECRET · ACCESS_TOKEN · ACCESS_TOKEN_SECRET in .env")
+        st.success("âœ… Twitter / X connected")
+        st.caption("TWITTER_API_KEY Â· API_SECRET Â· ACCESS_TOKEN Â· ACCESS_TOKEN_SECRET in .env")
     else:
-        st.info("🐦 Twitter alerts: add 4 keys to .env  (developer.twitter.com → Free tier)")
-        st.caption("TWITTER_API_KEY · TWITTER_API_SECRET · TWITTER_ACCESS_TOKEN · TWITTER_ACCESS_TOKEN_SECRET")
+        st.info("ðŸ¦ Twitter alerts: add 4 keys to .env  (developer.twitter.com â†’ Free tier)")
+        st.caption("TWITTER_API_KEY Â· TWITTER_API_SECRET Â· TWITTER_ACCESS_TOKEN Â· TWITTER_ACCESS_TOKEN_SECRET")
 
-    if st.button("🔔 Test Telegram", key="tg_test"):
-        ok = send_telegram("🏦 *MANIMINDSMONEY | RAMA*\n✅ Screener connected — Telegram alerts active!")
-        st.toast("Telegram OK ✅" if ok else "Telegram failed ❌ — check .env keys")
-    if st.button("📱 Test WhatsApp", key="wa_test", disabled=not _wa_enabled()):
+    if st.button("ðŸ”” Test Telegram", key="tg_test"):
+        ok = send_telegram("ðŸ¦ *MANIMINDSMONEY | RAMA*\nâœ… Screener connected â€” Telegram alerts active!")
+        st.toast("Telegram OK âœ…" if ok else "Telegram failed âŒ â€” check .env keys")
+    if st.button("ðŸ“± Test WhatsApp", key="wa_test", disabled=not _wa_enabled()):
         ok = send_whatsapp("MANIMINDSMONEY | RAMA\nWhatsApp alerts active!")
-        st.toast("WhatsApp OK ✅" if ok else "WhatsApp failed ❌ — check .env keys")
-    if st.button("🐦 Test Twitter", key="tw_test", disabled=not _tw_enabled()):
+        st.toast("WhatsApp OK âœ…" if ok else "WhatsApp failed âŒ â€” check .env keys")
+    if st.button("ðŸ¦ Test Twitter", key="tw_test", disabled=not _tw_enabled()):
         ok = post_tweet("NIFTY", "Index Test", 24000.0, 0.5, 1.2, 75.0,
                         23280.0, 24720.0,
                         st.session_state.get("k_strategy", "Momentum"), True)
-        st.toast("Twitter OK ✅" if ok else "Twitter failed ❌ — check .env keys")
+        st.toast("Twitter OK âœ…" if ok else "Twitter failed âŒ â€” check .env keys")
     if "tg_custom_msg" not in st.session_state:
         st.session_state["tg_custom_msg"] = ""
 
@@ -775,21 +791,21 @@ with st.sidebar:
             st.session_state["tg_custom_msg"] = ""
             st.session_state["_tg_send_ok"] = ok
 
-    custom_msg = st.text_area("Custom message", placeholder="Type a message to send to Telegram…",
+    custom_msg = st.text_area("Custom message", placeholder="Type a message to send to Telegramâ€¦",
                               key="tg_custom_msg", height=80)
-    st.button("📤 Send Custom", key="tg_custom_send",
+    st.button("ðŸ“¤ Send Custom", key="tg_custom_send",
               disabled=not (_tg_enabled() and bool(custom_msg.strip())),
               on_click=_send_custom)
     if "_tg_send_ok" in st.session_state:
         ok = st.session_state.pop("_tg_send_ok")
-        st.toast("Sent ✅" if ok else "Failed ❌ — check .env keys")
+        st.toast("Sent âœ…" if ok else "Failed âŒ â€” check .env keys")
 
     st.markdown("---")
     st.caption(f"Auto-refresh every {REFRESH_SECONDS} s")
-    st.caption("🟢 Score ≥ 70  🟡 Score ≥ 40  ⚪ Score < 40")
+    st.caption("ðŸŸ¢ Score â‰¥ 70  ðŸŸ¡ Score â‰¥ 40  âšª Score < 40")
 
 
-# ── Kite auth ─────────────────────────────────────────────────────────────────
+# â”€â”€ Kite auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _TOKEN_FILE = Path(__file__).resolve().parent / "output" / "kite_token.json"
 
 
@@ -810,7 +826,7 @@ def _save_token(token: str) -> None:
             ENV_PATH.write_text("\n".join(out) + "\n", encoding="utf-8")
         except Exception:
             pass
-    # shared file — persists across browser sessions on the same server instance
+    # shared file â€” persists across browser sessions on the same server instance
     try:
         _TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
         import json as _j
@@ -850,31 +866,31 @@ def _kite_connect() -> KiteConnect:
         except Exception:
             pass
 
-    # ── Token expired — show update UI ────────────────────────────────────────
-    st.warning("⚠️ Kite access token expired or not set.")
+    # â”€â”€ Token expired â€” show update UI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    st.warning("âš ï¸ Kite access token expired or not set.")
     st.markdown("### Update Zerodha Access Token")
     st.info(
         "**How to get today's token:**\n"
         "1. Open Kite app / kite.zerodha.com on your phone\n"
-        "2. You are already logged in — the session is active\n"
-        "3. Copy the access token from Settings → API or ask the account holder\n\n"
+        "2. You are already logged in â€” the session is active\n"
+        "3. Copy the access token from Settings â†’ API or ask the account holder\n\n"
         "**OR** log in via URL below to auto-generate:"
     )
 
-    tab1, tab2 = st.tabs(["📋 Paste Access Token directly", "🔗 Login via Zerodha URL"])
+    tab1, tab2 = st.tabs(["ðŸ“‹ Paste Access Token directly", "ðŸ”— Login via Zerodha URL"])
 
     with tab1:
         st.caption("Paste the access token (the account holder can share this daily)")
         _direct_token = st.text_input("Access Token", type="password",
-                                      placeholder="Paste access token here…",
+                                      placeholder="Paste access token hereâ€¦",
                                       key="direct_token_input")
-        if st.button("✅ Set Token", key="set_direct_token", type="primary",
+        if st.button("âœ… Set Token", key="set_direct_token", type="primary",
                      disabled=not _direct_token):
             kite.set_access_token(_direct_token.strip())
             try:
                 profile = kite.profile()
                 _save_token(_direct_token.strip())
-                st.success(f"✅ Token set! Logged in as **{profile.get('user_name')}**. Reloading…")
+                st.success(f"âœ… Token set! Logged in as **{profile.get('user_name')}**. Reloadingâ€¦")
                 time.sleep(1); st.rerun()
             except Exception as e:
                 st.error(f"Invalid token: {e}")
@@ -894,7 +910,7 @@ def _kite_connect() -> KiteConnect:
                     data = kite.generate_session(req_token, api_secret=api_secret)
                     kite.set_access_token(data["access_token"])
                     _save_token(data["access_token"])
-                    st.success(f"✅ Logged in as **{data.get('user_name')}**. Reloading…")
+                    st.success(f"âœ… Logged in as **{data.get('user_name')}**. Reloadingâ€¦")
                     time.sleep(1); st.rerun()
                 except Exception as e:
                     st.error(f"Login failed: {e}")
@@ -916,7 +932,7 @@ def get_kite() -> KiteConnect:
     return st.session_state["kite"]
 
 
-# ── account info ──────────────────────────────────────────────────────────────
+# â”€â”€ account info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def fetch_account_info(kite: KiteConnect) -> dict:
     info = {
         "name": "Trader",
@@ -988,39 +1004,39 @@ def render_account_banner(info: dict) -> None:
                     display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px'>
           <div>
             <span style='color:#fff;font-size:20px;font-weight:700'>
-              👋 {greeting}, {info["name"]}!
+              ðŸ‘‹ {greeting}, {info["name"]}!
             </span><br>
             <span style='color:#bbdefb;font-size:13px'>
-              {datetime.now():%A, %d %B %Y &nbsp;·&nbsp; %H:%M:%S}
+              {datetime.now():%A, %d %B %Y &nbsp;Â·&nbsp; %H:%M:%S}
             </span>
           </div>
           <div style='display:flex;gap:24px;text-align:center;flex-wrap:wrap'>
             <div><div style='color:#bbdefb;font-size:11px;text-transform:uppercase'>Available Cash</div>
-                 <div style='color:#a5d6a7;font-size:18px;font-weight:700'>₹{info["cash"]:,.0f}</div></div>
+                 <div style='color:#a5d6a7;font-size:18px;font-weight:700'>â‚¹{info["cash"]:,.0f}</div></div>
             <div><div style='color:#bbdefb;font-size:11px;text-transform:uppercase'>Margin Used</div>
-                 <div style='color:#ef9a9a;font-size:18px;font-weight:700'>₹{info["used"]:,.0f}</div></div>
+                 <div style='color:#ef9a9a;font-size:18px;font-weight:700'>â‚¹{info["used"]:,.0f}</div></div>
             <div><div style='color:#bbdefb;font-size:11px;text-transform:uppercase'>Net Balance</div>
-                 <div style='color:{_nc};font-size:18px;font-weight:700'>₹{info["net"]:,.0f}</div></div>
+                 <div style='color:{_nc};font-size:18px;font-weight:700'>â‚¹{info["net"]:,.0f}</div></div>
             <div style='border-left:1px solid #3d6ed4;padding-left:24px'>
               <div style='color:#bbdefb;font-size:11px;text-transform:uppercase'>Day Booked P&amp;L</div>
-              <div style='color:{_rc};font-size:18px;font-weight:700'>{_r_sign}₹{_realised:,.0f}</div>
+              <div style='color:{_rc};font-size:18px;font-weight:700'>{_r_sign}â‚¹{_realised:,.0f}</div>
             </div>
             <div><div style='color:#bbdefb;font-size:11px;text-transform:uppercase'>MTM (Open)</div>
-                 <div style='color:{_uc};font-size:18px;font-weight:700'>{_u_sign}₹{_unrealised:,.0f}</div></div>
+                 <div style='color:{_uc};font-size:18px;font-weight:700'>{_u_sign}â‚¹{_unrealised:,.0f}</div></div>
             <div><div style='color:#bbdefb;font-size:11px;text-transform:uppercase'>Total Day P&amp;L</div>
-                 <div style='color:{_tc};font-size:20px;font-weight:800'>{_t_sign}₹{_total_pnl:,.0f}</div></div>
+                 <div style='color:{_tc};font-size:20px;font-weight:800'>{_t_sign}â‚¹{_total_pnl:,.0f}</div></div>
           </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # ── live positions panel from Zerodha ─────────────────────────────────────
+    # â”€â”€ live positions panel from Zerodha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     day_pos = info.get("day_positions", [])
     if day_pos:
         with st.expander(
-            f"📊 Zerodha Positions — {len(day_pos)} active  |  "
-            f"Total P&L: {'+'if _total_pnl>=0 else ''}₹{_total_pnl:,.0f}",
+            f"ðŸ“Š Zerodha Positions â€” {len(day_pos)} active  |  "
+            f"Total P&L: {'+'if _total_pnl>=0 else ''}â‚¹{_total_pnl:,.0f}",
             expanded=False,
         ):
             _rows = []
@@ -1030,24 +1046,24 @@ def render_account_banner(info: dict) -> None:
                 _unrl = p["unrealised"]
                 _qty  = p["qty"]
                 _status = "OPEN" if _qty != 0 else "CLOSED"
-                _pnl_col = "🟢" if _pnl >= 0 else "🔴"
+                _pnl_col = "ðŸŸ¢" if _pnl >= 0 else "ðŸ”´"
                 _rows.append({
                     "Symbol":      p["symbol"],
                     "Product":     p["product"],
                     "Qty":         _qty,
-                    "Avg":         f"₹{p['avg_price']:.2f}",
-                    "LTP":         f"₹{p['ltp']:.2f}",
+                    "Avg":         f"â‚¹{p['avg_price']:.2f}",
+                    "LTP":         f"â‚¹{p['ltp']:.2f}",
                     "Status":      _status,
-                    "Booked P&L":  f"{'+'if _real>=0 else ''}₹{_real:,.0f}",
-                    "MTM":         f"{'+'if _unrl>=0 else ''}₹{_unrl:,.0f}",
-                    "Total P&L":   f"{_pnl_col} {'+'if _pnl>=0 else ''}₹{_pnl:,.0f}",
+                    "Booked P&L":  f"{'+'if _real>=0 else ''}â‚¹{_real:,.0f}",
+                    "MTM":         f"{'+'if _unrl>=0 else ''}â‚¹{_unrl:,.0f}",
+                    "Total P&L":   f"{_pnl_col} {'+'if _pnl>=0 else ''}â‚¹{_pnl:,.0f}",
                 })
             pos_df = pd.DataFrame(_rows)
             st.dataframe(pos_df, use_container_width=True, hide_index=True)
 
 
-# ── universe & data ───────────────────────────────────────────────────────────
-@st.cache_data(ttl=86_400, show_spinner="Fetching Nifty 500 universe…")
+# â”€â”€ universe & data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+@st.cache_data(ttl=86_400, show_spinner="Fetching Nifty 500 universeâ€¦")
 def load_nifty500() -> list[str]:
     try:
         df  = pd.read_csv(NSE_N500_URL)
@@ -1072,13 +1088,13 @@ def load_nifty500() -> list[str]:
     ]
 
 
-@st.cache_data(ttl=86_400, show_spinner="Fetching F&O universe…")
+@st.cache_data(ttl=86_400, show_spinner="Fetching F&O universeâ€¦")
 def load_fno_stocks() -> list[str]:
     """Load F&O stock universe.
     Strategy 1: Kite instruments NFO (most accurate, requires auth).
     Strategy 2: Hardcoded list of ~180 current F&O stocks.
     """
-    # ── Strategy 1: Kite NFO instruments ─────────────────────────────────────
+    # â”€â”€ Strategy 1: Kite NFO instruments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         kite = get_kite()
         inst = kite.instruments("NFO")
@@ -1092,13 +1108,13 @@ def load_fno_stocks() -> list[str]:
             if i.get("instrument_type") == "FUT"
             and i.get("name", "").strip().upper() not in _index
         })
-        if len(syms) > 50:   # sanity check — expect 150-200
+        if len(syms) > 50:   # sanity check â€” expect 150-200
             _log.info(f"F&O universe: {len(syms)} stocks from Kite NFO instruments")
             return syms
     except Exception as e:
         _log.warning(f"Kite NFO instruments failed: {e}. Using hardcoded fallback.")
 
-    # ── Strategy 2: hardcoded list (as of Nov 2026) ───────────────────────────
+    # â”€â”€ Strategy 2: hardcoded list (as of Nov 2026) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     return sorted([
             "AARTIIND","ABB","ABBOTINDIA","ABCAPITAL","ABFRL","ACC","ADANIENT",
             "ADANIPORTS","ALKEM","AMBUJACEM","APOLLOHOSP","APOLLOTYRE","ASHOKLEY",
@@ -1130,11 +1146,11 @@ def load_fno_stocks() -> list[str]:
         ])
 
 
-@st.cache_data(ttl=86_400, show_spinner="Fetching All NSE Cash universe…")
+@st.cache_data(ttl=86_400, show_spinner="Fetching All NSE Cash universeâ€¦")
 def load_all_nse_cash() -> list[str]:
     try:
         df  = pd.read_csv(NSE_EQ_URL)
-        # NSE EQUITY_L.csv columns: SYMBOL, NAME OF COMPANY, SERIES, DATE OF LISTING, …
+        # NSE EQUITY_L.csv columns: SYMBOL, NAME OF COMPANY, SERIES, DATE OF LISTING, â€¦
         sym_col    = next((c for c in df.columns if c.strip().upper() == "SYMBOL"), None)
         series_col = next((c for c in df.columns if "series" in c.lower()), None)
         if sym_col is None:
@@ -1147,11 +1163,11 @@ def load_all_nse_cash() -> list[str]:
         return load_nifty500()
 
 
-@st.cache_data(ttl=3_600, show_spinner="Loading futures contracts…")
+@st.cache_data(ttl=3_600, show_spinner="Loading futures contractsâ€¦")
 def load_futures_instruments(month: str = "current") -> dict[str, dict]:
     """Return {symbol: {lot_size, tradingsymbol, expiry, nfo_key}} for stock futures.
 
-    nfo_key = "NFO:tradingsymbol" — ready for kite.quote()
+    nfo_key = "NFO:tradingsymbol" â€” ready for kite.quote()
     month = "current" | "next"
     """
     import datetime as _dt
@@ -1203,7 +1219,7 @@ def load_futures_instruments(month: str = "current") -> dict[str, dict]:
 
 
 def load_futures_lot_sizes(month: str = "current") -> dict[str, int]:
-    """Convenience wrapper — returns {sym: lot_size} only."""
+    """Convenience wrapper â€” returns {sym: lot_size} only."""
     return {s: v["lot_size"] for s, v in load_futures_instruments(month).items()}
 
 
@@ -1212,7 +1228,7 @@ def load_universe(choice: str = "Nifty 500") -> list[str]:
         return load_all_nse_cash()
     if choice == "Nifty F&O":
         return load_fno_stocks()
-    if choice in ("Futures – Current Month", "Futures – Next Month"):
+    if choice in ("Futures â€“ Current Month", "Futures â€“ Next Month"):
         month = "current" if "Current" in choice else "next"
         lots  = load_futures_lot_sizes(month)
         return sorted(lots.keys()) if lots else load_fno_stocks()
@@ -1295,8 +1311,8 @@ def get_15min_indicators(sym: str) -> dict:
         rsi = _calc_rsi(close, 14)
         ltp = float(close.iloc[-1])
 
-        # Volume Delta — candles where close > open = buying volume
-        # Uses actual traded volume, not pending orders → reliable signal
+        # Volume Delta â€” candles where close > open = buying volume
+        # Uses actual traded volume, not pending orders â†’ reliable signal
         buy_mask  = close > open_
         sell_mask = close < open_
         buy_vol   = float(volume[buy_mask].sum())
@@ -1341,7 +1357,7 @@ def _calc_adx(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 1
 
 
 def _bb_squeeze(closes: pd.Series, period: int = 20, threshold: float = 0.70) -> bool:
-    """True when current BB width is below threshold × its own rolling average (compression)."""
+    """True when current BB width is below threshold Ã— its own rolling average (compression)."""
     closes = closes.dropna()
     if len(closes) < period + 5:
         return False
@@ -1370,7 +1386,7 @@ def load_daily_data(symbols: tuple) -> dict[str, dict]:
     """Returns {sym: {avg_vol, rsi, bb_squeeze, nr7, ema21/50/200, ...}} cached for the day."""
     syms_yf = [s + ".NS" for s in symbols]
     try:
-        # 1y gives ~252 trading days — enough for 200-day EMA
+        # 1y gives ~252 trading days â€” enough for 200-day EMA
         raw = yf.download(syms_yf, period="1y", interval="1d",
                           progress=False, auto_adjust=True)
     except Exception:
@@ -1387,7 +1403,7 @@ def load_daily_data(symbols: tuple) -> dict[str, dict]:
             high_s = (raw["High"]  if single else raw["High"][sym_yf]).dropna()
             low_s  = (raw["Low"]   if single else raw["Low"][sym_yf]).dropna()
 
-            # ── EMA 21 / 50 / 200 ────────────────────────────────────────────
+            # â”€â”€ EMA 21 / 50 / 200 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             ltp_today = float(close.iloc[-1])
             ema21  = float(close.ewm(span=21,  adjust=False).mean().iloc[-1])
             ema50  = float(close.ewm(span=50,  adjust=False).mean().iloc[-1])
@@ -1396,16 +1412,16 @@ def load_daily_data(symbols: tuple) -> dict[str, dict]:
             above_ema50  = ltp_today > ema50
             above_ema200 = ltp_today > ema200
 
-            # ── inside bar: today's range is inside yesterday's range ─────────
+            # â”€â”€ inside bar: today's range is inside yesterday's range â”€â”€â”€â”€â”€â”€â”€â”€â”€
             inside_bar = (len(high_s) >= 2 and len(low_s) >= 2 and
                           float(high_s.iloc[-1]) < float(high_s.iloc[-2]) and
                           float(low_s.iloc[-1])  > float(low_s.iloc[-2]))
 
-            # ── range breakout: today's close > 5-day high (excl. today) ────
+            # â”€â”€ range breakout: today's close > 5-day high (excl. today) â”€â”€â”€â”€
             range_bo = (len(high_s) >= 6 and
                         float(close.iloc[-1]) >= float(high_s.iloc[-6:-1].max()))
 
-            # ── VCP: 3 successive range contractions ─────────────────────────
+            # â”€â”€ VCP: 3 successive range contractions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             ranges = (high_s - low_s).dropna()
             if len(ranges) >= 15:
                 r_now  = float(ranges.iloc[-3:].mean())
@@ -1416,24 +1432,24 @@ def load_daily_data(symbols: tuple) -> dict[str, dict]:
             else:
                 vcp = False
 
-            # ── MACD bullish (12 EMA > 26 EMA after crossover) ──────────────
+            # â”€â”€ MACD bullish (12 EMA > 26 EMA after crossover) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             ema12        = close.ewm(span=12, adjust=False).mean()
             ema26        = close.ewm(span=26, adjust=False).mean()
             macd_line    = ema12 - ema26
             macd_signal  = macd_line.ewm(span=9, adjust=False).mean()
             macd_bullish = bool(macd_line.iloc[-1] > macd_signal.iloc[-1])
 
-            # ── ADX(14) — trend strength ────────────────────────────────────
+            # â”€â”€ ADX(14) â€” trend strength â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             adx_val = _calc_adx(high_s, low_s, close, 14)
 
-            # ── consecutive up-days (last 3) ─────────────────────────────────
+            # â”€â”€ consecutive up-days (last 3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             up_days = int((close.diff().iloc[-3:] > 0).sum())
 
-            # ── 52-week High / Low from yfinance (last 252 trading days) ────
+            # â”€â”€ 52-week High / Low from yfinance (last 252 trading days) â”€â”€â”€â”€
             high_252 = float(high_s.iloc[-252:].max()) if len(high_s) >= 1 else ltp_today
             low_252  = float(low_s.iloc[-252:].min())  if len(low_s)  >= 1 else ltp_today
 
-            # ── Volume Delta: count up/down candles in last 10 days ──────────
+            # â”€â”€ Volume Delta: count up/down candles in last 10 days â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             _open_s  = (raw["Open"] if single else raw["Open"][sym_yf]).dropna()
             _last10c = close.iloc[-11:-1]   # last 10 completed days (excl. today)
             _last10o = _open_s.iloc[-11:-1]
@@ -1489,7 +1505,7 @@ def _gnews_headlines(sym: str, company: str = "") -> list[tuple[str, str]]:
             if not title_tag:
                 continue
             title = title_tag.get_text(strip=True)
-            # Google News RSS <link> is a redirect URL — use it directly
+            # Google News RSS <link> is a redirect URL â€” use it directly
             link  = link_tag.get_text(strip=True) if link_tag else ""
             results.append((title, link))
         return results
@@ -1538,10 +1554,10 @@ def _fetch_news_one(sym: str) -> tuple[str, dict]:
         _result_kw = {"result", "results", "quarterly", "q1", "q2", "q3", "q4",
                       "earnings", "profit", "revenue"}
 
-        # 1. Google News RSS — primary source, free, no API key
+        # 1. Google News RSS â€” primary source, free, no API key
         gnews: list[tuple[str, str]] = _gnews_headlines(sym)
 
-        # 2. Screener.in announcements — quarterly results flag + BSE/NSE filings
+        # 2. Screener.in announcements â€” quarterly results flag + BSE/NSE filings
         sc_items, has_results = _screener_news(sym)
 
         # 3. yfinance as supplementary fallback if both above are empty
@@ -1579,7 +1595,7 @@ def _fetch_news_one(sym: str) -> tuple[str, dict]:
         return sym, {}
 
 
-@st.cache_data(ttl=7_200, show_spinner=False)   # cache 2 h — news refreshes slowly
+@st.cache_data(ttl=7_200, show_spinner=False)   # cache 2 h â€” news refreshes slowly
 def load_news_data(symbols: tuple, _v: int = 2) -> dict[str, dict]:
     """Returns {sym: {sentiment, headlines, urls, has_results, n_articles}} for all symbols."""
     result: dict[str, dict] = {}
@@ -1623,11 +1639,11 @@ def load_kite_quotes(kite: KiteConnect, symbols: list[str],
     return result
 
 
-@st.cache_data(ttl=300, show_spinner=False)   # 5-min cache — refreshes with each candle
+@st.cache_data(ttl=300, show_spinner=False)   # 5-min cache â€” refreshes with each candle
 def load_15min_vwap(symbols: tuple) -> dict[str, dict]:
     """
     Download today's 15-min bars for all symbols in one shot and compute
-    cumulative VWAP (sum(TP×Vol) / sum(Vol)).  Returns:
+    cumulative VWAP (sum(TPÃ—Vol) / sum(Vol)).  Returns:
         {sym: {"vwap_15": float, "above_vwap_15": bool}}
     Missing symbols get {"vwap_15": 0.0, "above_vwap_15": None}.
     """
@@ -1685,7 +1701,7 @@ def build_intraday_df(quotes: dict[str, dict], daily_data: dict[str, dict],
             if prev_close <= 0:
                 continue
             pct_change  = (ltp - prev_close) / prev_close * 100
-            # vol_surge: 1.0 (neutral) when daily baseline unavailable — stock still shown
+            # vol_surge: 1.0 (neutral) when daily baseline unavailable â€” stock still shown
             # so pattern-only strategies (VCP, Inside Bar, Swing) work even if yfinance fails
             vol_surge   = (volume / avg_vol) if avg_vol > 0 else 1.0
             # prefer yfinance 52W values (accurate); fall back to Kite quote if missing
@@ -1700,7 +1716,7 @@ def build_intraday_df(quotes: dict[str, dict], daily_data: dict[str, dict],
                 high_52w, low_52w = low_52w, high_52w
             dist_52w = (high_52w - ltp) / ltp * 100 if high_52w > 0 else 0.0
             # Use Kite's actual circuit limits (vary per stock: 2/5/10/20%)
-            # F&O stocks have no circuit — Kite returns 0 in that case
+            # F&O stocks have no circuit â€” Kite returns 0 in that case
             _uc = float(q.get("upper_circuit_limit") or 0)
             _lc = float(q.get("lower_circuit_limit") or 0)
             if _uc <= 0:
@@ -1736,7 +1752,7 @@ def build_intraday_df(quotes: dict[str, dict], daily_data: dict[str, dict],
             macd_bullish = d.get("macd_bullish", False)
             adx          = d.get("adx",          20.0)
             up_days      = d.get("up_days",       0)
-            # ── Volume Delta: buying pressure from actual traded candles ─────
+            # â”€â”€ Volume Delta: buying pressure from actual traded candles â”€â”€â”€â”€â”€
             # Today: use Kite's intraday OHLC to decide if today is a buying candle
             # + use last 5 daily candles from yfinance for a more robust signal
             _d_closes = []  # will use daily close vs open from yfinance
@@ -1745,7 +1761,7 @@ def build_intraday_df(quotes: dict[str, dict], daily_data: dict[str, dict],
             _buy_days  = int(_yf_d.get("buy_days",  5))
             _sell_days = int(_yf_d.get("sell_days", 5))
             _today_up  = ltp > float(ohlc.get("open", ltp))
-            # weight today's signal 2× vs each historical day
+            # weight today's signal 2Ã— vs each historical day
             _total_w = _buy_days + _sell_days + 2
             _buy_w   = _buy_days + (2 if _today_up else 0)
             bs_ratio = round(_buy_w / _total_w, 2) if _total_w > 0 else 0.5
@@ -1805,7 +1821,7 @@ def technical_filter(df: pd.DataFrame,
     if df.empty:
         return df
 
-    # ── momentum filters (AND with each other) ────────────────────────────────
+    # â”€â”€ momentum filters (AND with each other) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if use_pct:
         df = df[df["pct_change"] >= min_pct]
     if use_vol:
@@ -1817,7 +1833,7 @@ def technical_filter(df: pd.DataFrame,
     if use_bs and "bs_ratio" in df.columns:
         df = df[df["bs_ratio"] >= bs_min]
 
-    # ── strategy / setup filters — OR logic among themselves ─────────────────
+    # â”€â”€ strategy / setup filters â€” OR logic among themselves â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Each enabled strategy contributes stocks; a stock passes if it matches
     # ANY of the enabled strategies. This lets VCP + Inside Bar show stocks
     # that fit either pattern, not just both at once.
@@ -1841,12 +1857,12 @@ def technical_filter(df: pd.DataFrame,
             combined = combined | m
         df = df[combined]
 
-    # ── EMA filters (AND — each enabled EMA must be satisfied) ──────────────
+    # â”€â”€ EMA filters (AND â€” each enabled EMA must be satisfied) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if use_ema21  and _col("above_ema21"):  df = df[df["above_ema21"]  == True]  # noqa: E712
     if use_ema50  and _col("above_ema50"):  df = df[df["above_ema50"]  == True]  # noqa: E712
     if use_ema200 and _col("above_ema200"): df = df[df["above_ema200"] == True]  # noqa: E712
 
-    # ── news / results filter (AND — applied on top of everything) ───────────
+    # â”€â”€ news / results filter (AND â€” applied on top of everything) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if use_news and _col("news_sentiment"):
         df = df[df["news_sentiment"] > 0.05]
     if news_results_only and _col("news_has_results"):
@@ -1860,7 +1876,7 @@ def score_df(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
 
-    # ── existing intraday score ───────────────────────────────────────────────
+    # â”€â”€ existing intraday score â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     max_surge = max(df["vol_surge"].max(), 1)
     max_pct   = max(df["pct_change"].max(), 1)
     max_52w, min_52w = df["dist_52w"].max(), df["dist_52w"].min()
@@ -1879,7 +1895,7 @@ def score_df(df: pd.DataFrame) -> pd.DataFrame:
     df["setup_score"] = setup_pts.clip(0, 25).round(0).astype(int)
     df["score"] = (df["vol_score"] + df["mom_score"] + df["res_score"] + setup_pts).round(1)
 
-    # ── swing_score: 3-5 day high-probability setup ───────────────────────────
+    # â”€â”€ swing_score: 3-5 day high-probability setup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Weights: EMA alignment 30 | RSI quality 25 | Volume 20 | Near 52W High 15 | ADX 10
     sw = pd.Series(0.0, index=df.index)
 
@@ -1892,7 +1908,7 @@ def score_df(df: pd.DataFrame) -> pd.DataFrame:
         fully_aligned = df["above_ema21"] & df["above_ema50"] & df["above_ema200"]
         sw += fully_aligned.astype(float) * 5   # bonus for all 3 aligned
 
-    # 2. RSI quality (25 pts) — 50-65 is the sweet spot for swing entries
+    # 2. RSI quality (25 pts) â€” 50-65 is the sweet spot for swing entries
     if _c("rsi"):
         rsi = df["rsi"]
         sw += ((rsi >= 50) & (rsi <= 65)).astype(float) * 25
@@ -1907,7 +1923,7 @@ def score_df(df: pd.DataFrame) -> pd.DataFrame:
         sw += ((vs >= 1.5) & (vs < 2.0)).astype(float) * 12
         sw += ((vs >= 1.2) & (vs < 1.5)).astype(float) * 6
 
-    # 4. Proximity to 52W high (15 pts) — strong stocks near highs
+    # 4. Proximity to 52W high (15 pts) â€” strong stocks near highs
     if _c("dist_52w"):
         dist = df["dist_52w"]
         sw += (dist <= 5).astype(float)                       * 15
@@ -1932,7 +1948,7 @@ def score_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ── position persistence ──────────────────────────────────────────────────────
+# â”€â”€ position persistence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def save_positions() -> None:
     """Write all positions to JSON so they survive browser refresh."""
     POSITIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -1971,8 +1987,8 @@ def load_positions_from_file() -> dict:
 def sync_with_kite(kite: KiteConnect) -> None:
     """
     Merge file positions with live Kite day-positions:
-      - Position in Kite (qty>0) but missing here → restore with default SL/target.
-      - Position here (open) but Kite shows qty=0  → mark closed.
+      - Position in Kite (qty>0) but missing here â†’ restore with default SL/target.
+      - Position here (open) but Kite shows qty=0  â†’ mark closed.
     """
     try:
         kite_day = kite.positions().get("day", [])
@@ -1986,18 +2002,18 @@ def sync_with_kite(kite: KiteConnect) -> None:
         if int(p.get("quantity", 0)) > 0 and p.get("product") == "MIS"
     }
 
-    # mark closed if Kite says qty = 0 — but never close paper-trade positions this way
+    # mark closed if Kite says qty = 0 â€” but never close paper-trade positions this way
     for sym, pos in st.session_state.positions.items():
         is_paper = pos.get("paper", False) or str(pos.get("order_id", "")).startswith("PAPER-")
         if pos["status"] == "open" and sym not in kite_open and not is_paper:
             pos["status"] = "closed"
-            _log.info(f"Position {sym} closed — not found in Kite positions.")
+            _log.info(f"Position {sym} closed â€” not found in Kite positions.")
 
     # restore positions found in Kite but not tracked here
     for sym, kp in kite_open.items():
         existing = st.session_state.positions.get(sym, {})
         if existing.get("status") == "open":
-            # already tracked — just update qty from Kite (handles partial fills)
+            # already tracked â€” just update qty from Kite (handles partial fills)
             existing["qty"] = int(kp["quantity"])
             continue
         avg   = float(kp.get("average_price") or 0)
@@ -2017,7 +2033,7 @@ def sync_with_kite(kite: KiteConnect) -> None:
             "status":       "open",
             "fills":        [{"action": "BUY", "qty": qty, "price": avg, "time": datetime.now()}],
         }
-        _log.info(f"Restored {sym} from Kite: qty={qty} avg=₹{avg:.2f} SL=₹{sl:.2f} Tgt=₹{tgt:.2f}")
+        _log.info(f"Restored {sym} from Kite: qty={qty} avg=â‚¹{avg:.2f} SL=â‚¹{sl:.2f} Tgt=â‚¹{tgt:.2f}")
     save_positions()
 
 
@@ -2032,7 +2048,7 @@ def init_positions(kite: KiteConnect) -> None:
     st.session_state["positions_initialized"] = True
 
 
-# ── order placement ───────────────────────────────────────────────────────────
+# â”€â”€ order placement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def fetch_margin_required(kite: KiteConnect, sym: str, qty: int, ltp: float) -> float:
     """Return estimated margin required for a MIS market buy order. 0 on error."""
     try:
@@ -2157,14 +2173,14 @@ def do_buy(kite: KiteConnect, sym: str, name: str, qty: int, ltp: float, paper: 
         "status":        "open",
         "paper":         paper,
         "fills":         [{"action": "BUY", "qty": qty, "price": ltp, "time": datetime.now()}],
-        # futures metadata — stored so SELL/SL/target modify also use NFO exchange
+        # futures metadata â€” stored so SELL/SL/target modify also use NFO exchange
         "fut_info":      fut_info,
     }
     st.session_state.positions[sym] = pos
 
     save_positions()
     tag = "PAPER" if paper else "LIVE"
-    st.toast(f"✅ [{tag}] BUY {sym}  qty={qty}  @ ₹{ltp:.2f}  SL ₹{sl:.2f}  Tgt ₹{target:.2f}", icon="✅")
+    st.toast(f"âœ… [{tag}] BUY {sym}  qty={qty}  @ â‚¹{ltp:.2f}  SL â‚¹{sl:.2f}  Tgt â‚¹{target:.2f}", icon="âœ…")
 
     # Telegram signal
     _vol_surge = st.session_state.get(f"_last_vol_{sym}", 1.0)
@@ -2179,10 +2195,10 @@ def do_buy(kite: KiteConnect, sym: str, name: str, qty: int, ltp: float, paper: 
         "Name":       name,
         "Side":       "BUY",
         "Qty":        qty,
-        "Entry":      f"₹{ltp:.2f}",
-        "SL":         f"₹{sl:.2f} ({INIT_SL_PCT:.1f}%)",
-        "Target":     f"₹{target:.2f} ({INIT_TGT_PCT:.1f}%)",
-        "Margin Req": f"₹{margin:,.2f}" if margin else "N/A",
+        "Entry":      f"â‚¹{ltp:.2f}",
+        "SL":         f"â‚¹{sl:.2f} ({INIT_SL_PCT:.1f}%)",
+        "Target":     f"â‚¹{target:.2f} ({INIT_TGT_PCT:.1f}%)",
+        "Margin Req": f"â‚¹{margin:,.2f}" if margin else "N/A",
         "Order ID":   buy_order_id,
         "Time":       datetime.now().strftime("%H:%M:%S"),
     })
@@ -2298,7 +2314,7 @@ def do_sell(kite: KiteConnect, sym: str, qty: int, ltp: float, paper: bool,
     _exchange = "NFO" if _fi else "NSE"
     _fut_ts   = _fi.get("tradingsymbol") if _fi else None
     _product  = KiteConnect.PRODUCT_NRML if _fi else KiteConnect.PRODUCT_MIS
-    # futures: qty must be a multiple of lot size — clamp silently
+    # futures: qty must be a multiple of lot size â€” clamp silently
     _lot_sz = int(_fi.get("lot_size", 0)) if _fi else 0
     if _lot_sz > 0:
         qty = max(_lot_sz, (qty // _lot_sz) * _lot_sz)
@@ -2320,8 +2336,8 @@ def do_sell(kite: KiteConnect, sym: str, qty: int, ltp: float, paper: bool,
     pnl = (ltp - pos["buy_price"]) * qty
     save_positions()
     tag = "PAPER" if paper else "LIVE"
-    st.toast(f"{'✅' if pnl>=0 else '❌'} [{tag}] SELL {sym}  qty={qty}  @ ₹{ltp:.2f}  P&L ₹{pnl:+,.2f}",
-             icon="✅" if pnl >= 0 else "❌")
+    st.toast(f"{'âœ…' if pnl>=0 else 'âŒ'} [{tag}] SELL {sym}  qty={qty}  @ â‚¹{ltp:.2f}  P&L â‚¹{pnl:+,.2f}",
+             icon="âœ…" if pnl >= 0 else "âŒ")
 
     # Telegram exit alert
     tg_exit(sym, pos.get("name", sym), pos["buy_price"], ltp, qty, reason, paper)
@@ -2338,8 +2354,8 @@ def do_sell(kite: KiteConnect, sym: str, qty: int, ltp: float, paper: bool,
             "Side":       "SELL",
             "Qty sold":   qty,
             "Remaining":  pos["qty"],
-            "Buy price":  f"₹{pos['buy_price']:.2f}",
-            "Sell price": f"₹{ltp:.2f}",
+            "Buy price":  f"â‚¹{pos['buy_price']:.2f}",
+            "Sell price": f"â‚¹{ltp:.2f}",
             "Reason":     reason,
             "Time":       datetime.now().strftime("%H:%M:%S"),
         },
@@ -2347,7 +2363,7 @@ def do_sell(kite: KiteConnect, sym: str, qty: int, ltp: float, paper: bool,
             "Time":   f["time"].strftime("%H:%M:%S"),
             "Action": f["action"],
             "Qty":    f["qty"],
-            "Price":  f"₹{f['price']:.2f}",
+            "Price":  f"â‚¹{f['price']:.2f}",
             "Reason": f.get("reason", ""),
             "P&L":    f.get("P&L", ""),
         } for f in pos["fills"]],
@@ -2355,7 +2371,7 @@ def do_sell(kite: KiteConnect, sym: str, qty: int, ltp: float, paper: bool,
     )
 
 
-# ── trade journal ─────────────────────────────────────────────────────────────
+# â”€â”€ trade journal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def _load_journal() -> dict:
     if JOURNAL_FILE.exists():
         try:
@@ -2377,7 +2393,7 @@ def _journal_key(sym: str, buy_price: float) -> str:
     return f"{sym}@{buy_price:.2f}"
 
 
-# ── price alerts ──────────────────────────────────────────────────────────────
+# â”€â”€ price alerts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def _load_alerts() -> dict:
     if ALERTS_FILE.exists():
         try:
@@ -2417,14 +2433,14 @@ def _get_5min_close(sym: str) -> float:
         df = yf.Ticker(sym + ".NS").history(period="1d", interval="5m", auto_adjust=True)
         if df is None or df.empty or len(df) < 2:
             return 0.0
-        # iloc[-1] is the in-progress candle — use iloc[-2] (last completed)
+        # iloc[-1] is the in-progress candle â€” use iloc[-2] (last completed)
         return float(df["Close"].iloc[-2])
     except Exception:
         return 0.0
 
 
 def check_price_alerts(quotes: dict[str, dict]) -> None:
-    """Run every refresh — fires Telegram for triggered alerts then marks them done."""
+    """Run every refresh â€” fires Telegram for triggered alerts then marks them done."""
     alerts = _load_alerts()
     changed = False
     for sym, sym_alerts in alerts.items():
@@ -2437,7 +2453,7 @@ def check_price_alerts(quotes: dict[str, dict]) -> None:
             price     = a["price"]
             direction = a["direction"]
             if a.get("candle_close"):
-                # 5-min candle close confirmation — ignore LTP wicks
+                # 5-min candle close confirmation â€” ignore LTP wicks
                 close5 = _get_5min_close(sym)
                 if close5 <= 0:
                     continue
@@ -2456,32 +2472,32 @@ def check_price_alerts(quotes: dict[str, dict]) -> None:
                 a["trigger_price"] = round(trigger_price, 2)
                 a["trigger_time"]  = datetime.now().strftime("%Y-%m-%d %H:%M")
                 changed = True
-                _dir_icon  = "🚀" if direction == "above" else "⚠️"
-                _note_line = f"\n📌 Note: {a['note']}" if a.get("note") else ""
-                _conf_icon = "🕯 5-min candle close" if a.get("candle_close") else "⚡ LTP tick"
+                _dir_icon  = "ðŸš€" if direction == "above" else "âš ï¸"
+                _note_line = f"\nðŸ“Œ Note: {a['note']}" if a.get("note") else ""
+                _conf_icon = "ðŸ•¯ 5-min candle close" if a.get("candle_close") else "âš¡ LTP tick"
                 send_alert(
-                    f"🏦 *MANIMINDSMONEY | RAMA*\n"
-                    f"{'─'*28}\n"
-                    f"{_dir_icon} *PRICE ALERT — {sym}*\n"
-                    f"{'─'*28}\n"
-                    f"📍 Trigger: ₹{trigger_price:,.2f}\n"
-                    f"🎯 Alert:   ₹{price:,.2f} ({confirm_label})\n"
-                    f"📊 LTP now: ₹{ltp:,.2f}\n"
+                    f"ðŸ¦ *MANIMINDSMONEY | RAMA*\n"
+                    f"{'â”€'*28}\n"
+                    f"{_dir_icon} *PRICE ALERT â€” {sym}*\n"
+                    f"{'â”€'*28}\n"
+                    f"ðŸ“ Trigger: â‚¹{trigger_price:,.2f}\n"
+                    f"ðŸŽ¯ Alert:   â‚¹{price:,.2f} ({confirm_label})\n"
+                    f"ðŸ“Š LTP now: â‚¹{ltp:,.2f}\n"
                     f"{_conf_icon}\n"
                     f"{_note_line}\n"
-                    f"🕐 {datetime.now():%d %b %Y %H:%M}"
+                    f"ðŸ• {datetime.now():%d %b %Y %H:%M}"
                 )
     if changed:
         _save_alerts(alerts)
 
 
-# ── positions panel ───────────────────────────────────────────────────────────
+# â”€â”€ positions panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def render_positions_panel(kite: KiteConnect, quotes: dict[str, dict], paper: bool) -> None:
     active = {s: p for s, p in st.session_state.positions.items() if p["status"] == "open"}
     if not active:
         return
 
-    st.markdown("### 📊 Active Positions")
+    st.markdown("### ðŸ“Š Active Positions")
     for sym, pos in list(active.items()):
         ltp      = quotes.get(sym, {}).get("last_price", pos["buy_price"])
         pnl      = (ltp - pos["buy_price"]) * pos["qty"]
@@ -2496,7 +2512,7 @@ def render_positions_panel(kite: KiteConnect, quotes: dict[str, dict], paper: bo
         sl_style   = "color:#aaa;text-decoration:line-through" if is_held else ""
         tgt_style  = "color:#aaa;text-decoration:line-through" if is_held else ""
 
-        # auto SL / target check — skipped when position is held
+        # auto SL / target check â€” skipped when position is held
         sl_hit  = (not is_held) and ltp <= pos["sl"]
         tgt_hit = (not is_held) and ltp >= pos["target"]
 
@@ -2508,30 +2524,30 @@ def render_positions_panel(kite: KiteConnect, quotes: dict[str, dict], paper: bo
             <div style='border:2px solid {border_col};border-radius:10px;
                         padding:12px 18px;margin:4px 0;background:{bg_col}'>
               <span style='font-size:16px;font-weight:700'>{sym}</span>
-              &nbsp;·&nbsp; {pos.get("name","")[:30]}
+              &nbsp;Â·&nbsp; {pos.get("name","")[:30]}
               {held_badge}
               &nbsp;&nbsp;
               Qty: <b>{pos["qty"]}</b>
-              &nbsp;|&nbsp; Buy: <b>₹{pos["buy_price"]:.2f}</b>
-              &nbsp;|&nbsp; LTP: <b>₹{ltp:.2f}</b>
+              &nbsp;|&nbsp; Buy: <b>â‚¹{pos["buy_price"]:.2f}</b>
+              &nbsp;|&nbsp; LTP: <b>â‚¹{ltp:.2f}</b>
               &nbsp;|&nbsp;
               <span style='color:{pnl_col};font-size:16px;font-weight:700'>
-                P&amp;L: ₹{pnl:+,.2f} ({pnl_pct:+.2f}%)
+                P&amp;L: â‚¹{pnl:+,.2f} ({pnl_pct:+.2f}%)
               </span>
               <br>
-              <span style='{sl_style}'>SL: <b>₹{pos["sl"]:.2f}</b> ({sl_pct:.2f}%)</span>
+              <span style='{sl_style}'>SL: <b>â‚¹{pos["sl"]:.2f}</b> ({sl_pct:.2f}%)</span>
               &nbsp;
               <span style='font-size:11px;color:#888'>
-                {"[SL order: " + str(pos.get("sl_order_id","—")) + "]"}
+                {"[SL order: " + str(pos.get("sl_order_id","â€”")) + "]"}
               </span>
               &nbsp;&nbsp;
-              <span style='{tgt_style}'>Target: <b>₹{pos["target"]:.2f}</b> ({tgt_pct:.2f}%)</span>
+              <span style='{tgt_style}'>Target: <b>â‚¹{pos["target"]:.2f}</b> ({tgt_pct:.2f}%)</span>
               &nbsp;
               <span style='font-size:11px;color:#888'>
-                {"[Tgt order: " + str(pos.get("tgt_order_id","—")) + "]"}
+                {"[Tgt order: " + str(pos.get("tgt_order_id","â€”")) + "]"}
               </span>
-              {"&nbsp; <span style='color:red;font-weight:bold'>⚠️ SL HIT</span>" if sl_hit else ""}
-              {"&nbsp; <span style='color:green;font-weight:bold'>🎯 TARGET HIT</span>" if tgt_hit else ""}
+              {"&nbsp; <span style='color:red;font-weight:bold'>âš ï¸ SL HIT</span>" if sl_hit else ""}
+              {"&nbsp; <span style='color:green;font-weight:bold'>ðŸŽ¯ TARGET HIT</span>" if tgt_hit else ""}
             </div>
             """,
             unsafe_allow_html=True,
@@ -2566,40 +2582,40 @@ def render_positions_panel(kite: KiteConnect, quotes: dict[str, dict], paper: bo
 
         with c3:
             sl_pct_now = round((pos["sl"] - pos["buy_price"]) / pos["buy_price"] * 100, 4)
-            if st.button(f"Trail SL ↑0.25%  ({sl_pct_now:+.2f}%)", key=f"trail_sl_{sym}",
+            if st.button(f"Trail SL â†‘0.25%  ({sl_pct_now:+.2f}%)", key=f"trail_sl_{sym}",
                          disabled=is_held, help="Remove Hold first to trail SL"):
                 step       = round(pos["buy_price"] * TRAIL_STEP_PCT / 100, 2)
                 new_sl     = round(pos["sl"] + step, 2)
                 new_sl_pct = round((new_sl - pos["buy_price"]) / pos["buy_price"] * 100, 2)
                 ok = modify_sl_order(kite, pos, new_sl, paper)
                 if ok:
-                    st.toast(f"SL → ₹{new_sl:.2f} ({new_sl_pct:+.2f}% from buy)", icon="🔒")
+                    st.toast(f"SL â†’ â‚¹{new_sl:.2f} ({new_sl_pct:+.2f}% from buy)", icon="ðŸ”’")
                 st.rerun()
 
         with c4:
             tgt_pct_now = round((pos["target"] - pos["buy_price"]) / pos["buy_price"] * 100, 4)
-            if st.button(f"Trail Tgt ↑0.25%  ({tgt_pct_now:+.2f}%)", key=f"trail_tgt_{sym}",
+            if st.button(f"Trail Tgt â†‘0.25%  ({tgt_pct_now:+.2f}%)", key=f"trail_tgt_{sym}",
                          disabled=is_held, help="Remove Hold first to trail target"):
                 step        = round(pos["buy_price"] * TRAIL_STEP_PCT / 100, 2)
                 new_tgt     = round(pos["target"] + step, 2)
                 new_tgt_pct = round((new_tgt - pos["buy_price"]) / pos["buy_price"] * 100, 2)
                 ok = modify_target_order(kite, pos, new_tgt, paper)
                 if ok:
-                    st.toast(f"Target → ₹{new_tgt:.2f} ({new_tgt_pct:+.2f}% from buy)", icon="🎯")
+                    st.toast(f"Target â†’ â‚¹{new_tgt:.2f} ({new_tgt_pct:+.2f}% from buy)", icon="ðŸŽ¯")
                 st.rerun()
 
         with c5:
             if is_held:
-                if st.button("▶ Remove Hold", key=f"unhold_{sym}",
+                if st.button("â–¶ Remove Hold", key=f"unhold_{sym}",
                              help="Re-place SL and target orders and resume monitoring"):
                     restore_sl_target_orders(kite, pos, paper)
-                    st.toast(f"{sym} — SL & target orders restored", icon="▶")
+                    st.toast(f"{sym} â€” SL & target orders restored", icon="â–¶")
                     st.rerun()
             else:
-                if st.button("⏸ Hold", key=f"hold_{sym}",
+                if st.button("â¸ Hold", key=f"hold_{sym}",
                              help="Cancel SL & target orders and hold freely"):
                     cancel_sl_target_orders(kite, pos, paper)
-                    st.toast(f"{sym} — SL & target cancelled, position held", icon="⏸")
+                    st.toast(f"{sym} â€” SL & target cancelled, position held", icon="â¸")
                     st.rerun()
 
         with c6:
@@ -2608,19 +2624,19 @@ def render_positions_panel(kite: KiteConnect, quotes: dict[str, dict], paper: bo
                 do_sell(kite, sym, pos["qty"], ltp, paper, reason="SL HIT")
                 st.rerun()
             elif tgt_hit:
-                st.warning(f"🎯 Target hit — click SELL to book.")
+                st.warning(f"ðŸŽ¯ Target hit â€” click SELL to book.")
 
-        # ── journal popover — full width below the button row ─────────────────
+        # â”€â”€ journal popover â€” full width below the button row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         _jkey   = _journal_key(sym, pos["buy_price"])
         _jstore = _load_journal()
         _jentry = _jstore.get(_jkey, {"note": "", "updated": ""})
         _has_note = bool(_jentry.get("note", "").strip())
-        _btn_label = "📝 Journal ✓" if _has_note else "📝 Journal"
+        _btn_label = "ðŸ“ Journal âœ“" if _has_note else "ðŸ“ Journal"
 
         with st.popover(_btn_label, use_container_width=False):
-            st.markdown(f"**Trade Journal — {sym}**")
-            st.caption(f"Buy ₹{pos['buy_price']:.2f} · Qty {pos['qty']}"
-                       + (f" · Last saved: {_jentry['updated']}" if _jentry.get("updated") else ""))
+            st.markdown(f"**Trade Journal â€” {sym}**")
+            st.caption(f"Buy â‚¹{pos['buy_price']:.2f} Â· Qty {pos['qty']}"
+                       + (f" Â· Last saved: {_jentry['updated']}" if _jentry.get("updated") else ""))
             _note_key = f"journal_note_{_jkey}"
             if _note_key not in st.session_state:
                 st.session_state[_note_key] = _jentry.get("note", "")
@@ -2634,18 +2650,17 @@ def render_positions_panel(kite: KiteConnect, quotes: dict[str, dict], paper: bo
 
             st.text_area(
                 "Notes", key=_note_key, height=140,
-                placeholder="Why did you enter? Plan, emotions, what went wrong/right…",
+                placeholder="Why did you enter? Plan, emotions, what went wrong/rightâ€¦",
                 label_visibility="collapsed",
             )
-            st.button("💾 Save note", key=f"jrnl_save_{_jkey}", on_click=_save_note,
+            st.button("ðŸ’¾ Save note", key=f"jrnl_save_{_jkey}", on_click=_save_note,
                       use_container_width=True, type="primary")
             if st.session_state.pop("_journal_saved", None) == _jkey:
-                st.success("Saved ✓")
+                st.success("Saved âœ“")
 
         st.markdown("---")
 
 
-# ── screener table with buy/sell buttons ──────────────────────────────────────
 def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                           quotes: dict[str, dict], paper: bool,
                           news_data: dict | None = None,
@@ -2654,20 +2669,20 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
         st.info("No stocks match current filters. Try disabling technical/fundamental toggles.")
         return
 
-    # ── search bar ───────────────────────────────────────────────────────────
-    # Must clear BEFORE the widget is instantiated — Streamlit forbids modifying
+    # â”€â”€ search bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # Must clear BEFORE the widget is instantiated â€” Streamlit forbids modifying
     # a keyed widget's state after it has been created in the same run.
     if st.session_state.pop("_clear_search", False):
         st.session_state["tbl_search"] = ""
 
     _sc, _xc = st.columns([10, 1])
     with _sc:
-        st.text_input("🔍 Search stock name or symbol",
-                      placeholder="e.g. Reliance, TCS, INFY — press Enter to filter",
+        st.text_input("ðŸ” Search stock name or symbol",
+                      placeholder="e.g. Reliance, TCS, INFY â€” press Enter to filter",
                       key="tbl_search")
     with _xc:
         st.markdown("<div style='margin-top:28px'>", unsafe_allow_html=True)
-        if st.button("✕ Clear", key="clear_search_btn", use_container_width=True):
+        if st.button("âœ• Clear", key="clear_search_btn", use_container_width=True):
             st.session_state["_clear_search"] = True
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -2681,15 +2696,15 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
             st.info(f"No results for '{search}'.")
             return
 
-    # ── column definitions + sort state ──────────────────────────────────────
+    # â”€â”€ column definitions + sort state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     HEADERS = [
         ("#",             None,           0.3),
         ("Stock\nName",   None,           2.0),
         ("Symbol",        None,           1.1),
-        ("LTP\n₹",        "ltp",          0.9),
+        ("LTP\nâ‚¹",        "ltp",          0.9),
         ("Chg\n%",        "pct_change",   0.9),
         ("Vol\nSurge",    "vol_surge",    1.1),
-        ("VWAP\n15m ₹",   "vwap",         0.9),
+        ("VWAP\n15m â‚¹",   "vwap",         0.9),
         ("RSI\n14",       "rsi",          0.7),
         ("UC\nDist%",     "dist_to_uc",   0.9),
         ("52W\nHigh",     "high_52w",     0.9),
@@ -2711,7 +2726,7 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
         st.session_state["tbl_sort_col"] = _default_sort
         st.session_state["tbl_sort_asc"] = False
 
-    # inject CSS — active sort highlight + allow header buttons to wrap text
+    # inject CSS â€” active sort highlight + allow header buttons to wrap text
     active_col = st.session_state["tbl_sort_col"]
     st.markdown(f"""
     <style>
@@ -2731,6 +2746,48 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
         height: auto !important;
         min-height: 44px !important;
     }}
+
+    /* â”€â”€ Mobile: horizontal scroll table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    @media (max-width: 768px) {{
+        /* Make each row scroll horizontally instead of wrapping */
+        div[data-testid="stHorizontalBlock"] {{
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            gap: 2px !important;
+            padding-bottom: 4px !important;
+        }}
+        /* Each cell: fixed min-width so content stays on one line */
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {{
+            min-width: 60px !important;
+            flex-shrink: 0 !important;
+        }}
+        /* Compact text */
+        div[data-testid="column"] small,
+        div[data-testid="column"] p {{
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+            white-space: nowrap !important;
+        }}
+        /* Compact buttons */
+        div[data-testid="stButton"] > button {{
+            font-size: 9px !important;
+            padding: 2px 3px !important;
+            min-height: 30px !important;
+            white-space: nowrap !important;
+        }}
+        /* Number input smaller */
+        div[data-testid="stNumberInput"] input {{
+            font-size: 10px !important;
+            padding: 2px 4px !important;
+        }}
+        /* Reduce sidebar width on mobile */
+        section[data-testid="stSidebar"] {{
+            min-width: 200px !important;
+            max-width: 240px !important;
+        }}
+    }}
     </style>""", unsafe_allow_html=True)
 
     widths = [w for _, _, w in HEADERS]
@@ -2747,8 +2804,8 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                 unsafe_allow_html=True)
         else:
             active = active_col == df_col
-            arrow  = (" ▲" if st.session_state["tbl_sort_asc"] else " ▼") if active else " ⇅"
-            prefix = "● " if active else ""
+            arrow  = (" â–²" if st.session_state["tbl_sort_asc"] else " â–¼") if active else " â‡…"
+            prefix = "â— " if active else ""
             if col.button(f"{prefix}{label}{arrow}", key=f"sort_hdr_{df_col}",
                           use_container_width=True):
                 if active:
@@ -2768,7 +2825,7 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
         ascending=st.session_state["tbl_sort_asc"],
     ).reset_index(drop=True)
 
-    # ── pagination ────────────────────────────────────────────────────────────
+    # â”€â”€ pagination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     _PAGE_SIZE = 50
     _total     = len(final)
     _n_pages   = max(1, math.ceil(_total / _PAGE_SIZE))
@@ -2790,7 +2847,7 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
     _start = (_page - 1) * _PAGE_SIZE
     final  = final.iloc[_start : _start + _PAGE_SIZE].reset_index(drop=True)
 
-    # ── full-width margin banner (shown after BUY click) ──────────────────────
+    # â”€â”€ full-width margin banner (shown after BUY click) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     pm = st.session_state.get("pending_margin", {})
     if pm:
         margin_val = pm["margin"]
@@ -2801,14 +2858,14 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
             <div style='background:#e3f2fd;border-left:5px solid #1a73e8;
                         border-radius:6px;padding:14px 24px;margin:6px 0 12px 0;
                         font-size:15px;line-height:2.2;width:100%'>
-              💰 &nbsp;<b>{pm["sym"]}</b> &nbsp;·&nbsp;
-              Qty:&nbsp;<b>{pm["qty"]}</b> &nbsp;·&nbsp;
-              LTP:&nbsp;<b>₹{pm["ltp"]:.2f}</b> &nbsp;·&nbsp;
-              Trade value:&nbsp;<b>₹{trade_val:,.2f}</b>
+              ðŸ’° &nbsp;<b>{pm["sym"]}</b> &nbsp;Â·&nbsp;
+              Qty:&nbsp;<b>{pm["qty"]}</b> &nbsp;Â·&nbsp;
+              LTP:&nbsp;<b>â‚¹{pm["ltp"]:.2f}</b> &nbsp;Â·&nbsp;
+              Trade value:&nbsp;<b>â‚¹{trade_val:,.2f}</b>
               &nbsp;&nbsp;&nbsp;
               <span style='color:#1a73e8;font-size:20px;font-weight:800'>
-                {"Margin required: ₹" + f"{margin_val:,.2f}" if ok_margin
-                 else "⚠️ Margin unavailable — market may be closed"}
+                {"Margin required: â‚¹" + f"{margin_val:,.2f}" if ok_margin
+                 else "âš ï¸ Margin unavailable â€” market may be closed"}
               </span>
               {"&nbsp;&nbsp;<span style='color:#888;font-size:12px'>(approx MIS intraday margin)</span>" if ok_margin else ""}
             </div>
@@ -2825,7 +2882,7 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
             if st.session_state.get(_k, 0) != _lot:
                 st.session_state[_k] = _lot
     else:
-        # switched away from futures — reset any lot-size keys back to 100
+        # switched away from futures â€” reset any lot-size keys back to 100
         _prev_lots = st.session_state.get("_prev_lot_sizes", {})
         for _sym, _lot in _prev_lots.items():
             _k = f"qty_{_sym}"
@@ -2844,67 +2901,67 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
         vwap_val   = row.get("vwap", ltp)
         above_vwap = row.get("above_vwap", True)
         vwap_color = "#1b5e20" if above_vwap else "#b71c1c"
-        vwap_tag   = "▲" if above_vwap else "▼"
+        vwap_tag   = "â–²" if above_vwap else "â–¼"
         rsi_val    = row.get("rsi", 50.0)
         rsi_color  = "#1b5e20" if rsi_val < 40 else ("#b71c1c" if rsi_val > 60 else "#555")
 
         rcols = st.columns([0.3, 2.0, 1.1, 0.9, 0.9, 1.1, 0.9, 0.7, 0.9, 0.9, 0.9, 0.7, 0.7, 1.1, 0.7, 0.8, 0.8, 1.5])
 
         rcols[0].markdown(f"<small>{idx+1}</small>", unsafe_allow_html=True)
-        # News popover — click name to see latest headlines
+        # News popover â€” click name to see latest headlines
         _nd        = (news_data or {}).get(sym, {})
         _headlines = _nd.get("headlines", [])
         _urls      = _nd.get("urls", [])
         _sentiment = _nd.get("sentiment", 0.0)
         _n_art     = _nd.get("n_articles", 0)
         _sources   = _nd.get("sources", [])
-        _sent_icon = "🟢" if _sentiment > 0.05 else ("🔴" if _sentiment < -0.05 else "⚪")
-        with rcols[1].popover(f"{name[:18]}…" if len(name) > 18 else name,
+        _sent_icon = "ðŸŸ¢" if _sentiment > 0.05 else ("ðŸ”´" if _sentiment < -0.05 else "âšª")
+        with rcols[1].popover(f"{name[:18]}â€¦" if len(name) > 18 else name,
                               use_container_width=True):
-            st.markdown(f"**{name}** · `{sym}`")
+            st.markdown(f"**{name}** Â· `{sym}`")
             if _headlines:
-                _src_label = " · ".join(_sources) if _sources else "news"
-                st.caption(f"{_sent_icon} Sentiment: {_sentiment:+.2f} · {_n_art} articles · {_src_label}")
+                _src_label = " Â· ".join(_sources) if _sources else "news"
+                st.caption(f"{_sent_icon} Sentiment: {_sentiment:+.2f} Â· {_n_art} articles Â· {_src_label}")
                 for hl, url in zip(_headlines, _urls + [""] * len(_headlines)):
                     if url:
                         st.markdown(
-                            f"• <a href='{url}' target='_blank' rel='noopener noreferrer'>{hl}</a>",
+                            f"â€¢ <a href='{url}' target='_blank' rel='noopener noreferrer'>{hl}</a>",
                             unsafe_allow_html=True,
                         )
                     else:
-                        st.markdown(f"• {hl}")
+                        st.markdown(f"â€¢ {hl}")
                 _quick_links = (
                     f"<a href='https://www.tradingview.com/symbols/NSE-{sym}/' "
-                    f"target='_blank' style='font-size:11px;margin-right:8px'>📈 TradingView</a>"
+                    f"target='_blank' style='font-size:11px;margin-right:8px'>ðŸ“ˆ TradingView</a>"
                     f"<a href='https://www.screener.in/company/{sym}/' "
-                    f"target='_blank' style='font-size:11px;margin-right:8px'>📊 Screener</a>"
+                    f"target='_blank' style='font-size:11px;margin-right:8px'>ðŸ“Š Screener</a>"
                     f"<a href='https://www.moneycontrol.com/india/stockpricequote/search?keyword={sym}' "
-                    f"target='_blank' style='font-size:11px;margin-right:8px'>💹 Moneycontrol</a>"
+                    f"target='_blank' style='font-size:11px;margin-right:8px'>ðŸ’¹ Moneycontrol</a>"
                     f"<a href='https://news.google.com/search?q={sym}+NSE+stock&hl=en-IN' "
-                    f"target='_blank' style='font-size:11px'>🔍 News</a>"
+                    f"target='_blank' style='font-size:11px'>ðŸ” News</a>"
                 )
                 st.markdown(_quick_links, unsafe_allow_html=True)
             else:
-                st.caption("No headlines found — open directly:")
+                st.caption("No headlines found â€” open directly:")
                 _quick_links = (
                     f"<a href='https://www.tradingview.com/symbols/NSE-{sym}/' "
-                    f"target='_blank' style='font-size:12px;margin-right:8px'>📈 TradingView</a>"
+                    f"target='_blank' style='font-size:12px;margin-right:8px'>ðŸ“ˆ TradingView</a>"
                     f"<a href='https://www.screener.in/company/{sym}/' "
-                    f"target='_blank' style='font-size:12px;margin-right:8px'>📊 Screener</a>"
+                    f"target='_blank' style='font-size:12px;margin-right:8px'>ðŸ“Š Screener</a>"
                     f"<a href='https://www.moneycontrol.com/india/stockpricequote/search?keyword={sym}' "
-                    f"target='_blank' style='font-size:12px;margin-right:8px'>💹 Moneycontrol</a>"
+                    f"target='_blank' style='font-size:12px;margin-right:8px'>ðŸ’¹ Moneycontrol</a>"
                     f"<a href='https://news.google.com/search?q={sym}+NSE+stock&hl=en-IN' "
-                    f"target='_blank' style='font-size:12px'>🔍 News</a>"
+                    f"target='_blank' style='font-size:12px'>ðŸ” News</a>"
                 )
                 st.markdown(_quick_links, unsafe_allow_html=True)
         rcols[2].markdown(f"<small><b>{sym}</b></small>", unsafe_allow_html=True)
-        rcols[3].markdown(f"<small>₹{ltp:.2f}</small>", unsafe_allow_html=True)
+        rcols[3].markdown(f"<small>â‚¹{ltp:.2f}</small>", unsafe_allow_html=True)
         rcols[4].markdown(
             f"<small style='color:{pct_color};font-weight:bold'>{row['pct_change']:+.2f}%</small>",
             unsafe_allow_html=True)
-        rcols[5].markdown(f"<small>{row['vol_surge']:.1f}×</small>", unsafe_allow_html=True)
+        rcols[5].markdown(f"<small>{row['vol_surge']:.1f}Ã—</small>", unsafe_allow_html=True)
         rcols[6].markdown(
-            f"<small style='color:{vwap_color}'>{vwap_tag}₹{vwap_val:.1f}</small>",
+            f"<small style='color:{vwap_color}'>{vwap_tag}â‚¹{vwap_val:.1f}</small>",
             unsafe_allow_html=True)
         rcols[7].markdown(
             f"<small style='color:{rsi_color}'><b>{rsi_val:.0f}</b></small>",
@@ -2914,36 +2971,36 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
         _lc_price = row.get("lower_circuit", 0.0)
         _uc_color = "#b71c1c" if _uc_dist <= 1.0 else ("#e65100" if _uc_dist <= 3.0 else "#555")
         rcols[8].markdown(
-            f"<small style='color:{_uc_color}' title='UC ₹{_uc_price:,.2f} | LC ₹{_lc_price:,.2f}'>"
+            f"<small style='color:{_uc_color}' title='UC â‚¹{_uc_price:,.2f} | LC â‚¹{_lc_price:,.2f}'>"
             f"{_uc_dist:.1f}%</small>",
             unsafe_allow_html=True)
-        # 52W High — green if LTP is within 5% of high
+        # 52W High â€” green if LTP is within 5% of high
         _h52 = row.get("high_52w", 0.0)
         _h52_color = "#1b5e20" if _h52 > 0 and ((_h52 - ltp) / _h52 * 100) <= 5 else "#555"
         rcols[9].markdown(
-            f"<small style='color:{_h52_color}'>₹{_h52:,.0f}</small>",
+            f"<small style='color:{_h52_color}'>â‚¹{_h52:,.0f}</small>",
             unsafe_allow_html=True)
-        # 52W Low — red if LTP is within 10% of low
+        # 52W Low â€” red if LTP is within 10% of low
         _l52 = row.get("low_52w", 0.0)
         _l52_color = "#b71c1c" if _l52 > 0 and ((ltp - _l52) / _l52 * 100) <= 10 else "#555"
         rcols[10].markdown(
-            f"<small style='color:{_l52_color}'>₹{_l52:,.0f}</small>",
+            f"<small style='color:{_l52_color}'>â‚¹{_l52:,.0f}</small>",
             unsafe_allow_html=True)
 
-        # ADX — green ≥25 (trending), orange 20-25 (developing), grey <20 (choppy)
+        # ADX â€” green â‰¥25 (trending), orange 20-25 (developing), grey <20 (choppy)
         _adx = row.get("adx", 20.0)
         _adx_color = ("#1b5e20" if _adx >= 25 else ("#e65100" if _adx >= 20 else "#9e9e9e"))
-        _adx_tip   = "●" if _adx >= 25 else ("○" if _adx >= 20 else "–")
+        _adx_tip   = "â—" if _adx >= 25 else ("â—‹" if _adx >= 20 else "â€“")
         rcols[11].markdown(
             f"<small style='color:{_adx_color};font-weight:bold'>{_adx_tip}{_adx:.0f}</small>",
             unsafe_allow_html=True)
 
-        # Buy Pressure — ratio of buy-candle days + today's direction
+        # Buy Pressure â€” ratio of buy-candle days + today's direction
         # 0.7+ = strong buying (7/10 days up), 0.5 = balanced, <0.4 = selling
         _bs = row.get("bs_ratio", 0.5)
         _bs_pct = round(_bs * 100)
         _bs_color = ("#1b5e20" if _bs >= 0.65 else ("#e65100" if _bs >= 0.5 else "#b71c1c"))
-        _bs_icon  = "🟢" if _bs >= 0.65 else ("🟡" if _bs >= 0.5 else "🔴")
+        _bs_icon  = "ðŸŸ¢" if _bs >= 0.65 else ("ðŸŸ¡" if _bs >= 0.5 else "ðŸ”´")
         rcols[12].markdown(
             f"<small style='color:{_bs_color};font-weight:bold'>{_bs_icon}{_bs_pct}%</small>",
             unsafe_allow_html=True)
@@ -2951,30 +3008,30 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
         # Setup badges
         setup_pts = int(row.get("setup_score", 0))
         badges = []
-        if row.get("vcp"):           badges.append("🔴VCP")
-        if row.get("range_bo"):      badges.append("🟠RBO")
-        if row.get("inside_bar"):    badges.append("🟤IB")
-        if row.get("bb_squeeze"):    badges.append("🔵BB")
-        if row.get("nr7"):           badges.append("🟣NR7")
-        if row.get("near_day_high"): badges.append("🟢H")
-        if row.get("intraday_range", 99) <= 1.5:   badges.append("⚪Tight")
-        if 45 <= row.get("rsi", 0) <= 60:          badges.append("🟡RSI")
+        if row.get("vcp"):           badges.append("ðŸ”´VCP")
+        if row.get("range_bo"):      badges.append("ðŸŸ RBO")
+        if row.get("inside_bar"):    badges.append("ðŸŸ¤IB")
+        if row.get("bb_squeeze"):    badges.append("ðŸ”µBB")
+        if row.get("nr7"):           badges.append("ðŸŸ£NR7")
+        if row.get("near_day_high"): badges.append("ðŸŸ¢H")
+        if row.get("intraday_range", 99) <= 1.5:   badges.append("âšªTight")
+        if 45 <= row.get("rsi", 0) <= 60:          badges.append("ðŸŸ¡RSI")
         # EMA alignment badges
         _e21, _e50, _e200 = row.get("above_ema21"), row.get("above_ema50"), row.get("above_ema200")
-        if _e21 and _e50 and _e200:  badges.append("🟢E3")    # above all 3
-        elif _e21 and _e50:          badges.append("🟡E2")    # above 21+50
-        elif _e21:                   badges.append("⚪E1")    # only above 21
+        if _e21 and _e50 and _e200:  badges.append("ðŸŸ¢E3")    # above all 3
+        elif _e21 and _e50:          badges.append("ðŸŸ¡E2")    # above 21+50
+        elif _e21:                   badges.append("âšªE1")    # only above 21
         _ns = row.get("news_sentiment", 0.0)
-        if row.get("news_has_results"):             badges.append("📋Res")
-        if _ns > 0.1:                              badges.append(f"📰+{_ns:.2f}")
-        elif _ns < -0.1:                           badges.append(f"📰{_ns:.2f}")
-        badge_str = " ".join(badges) if badges else "—"
+        if row.get("news_has_results"):             badges.append("ðŸ“‹Res")
+        if _ns > 0.1:                              badges.append(f"ðŸ“°+{_ns:.2f}")
+        elif _ns < -0.1:                           badges.append(f"ðŸ“°{_ns:.2f}")
+        badge_str = " ".join(badges) if badges else "â€”"
         rcols[13].markdown(f"<small style='font-size:10px'>{badge_str}</small>",
                            unsafe_allow_html=True)
 
         rcols[14].markdown(f"<small><b>{row['score']:.0f}</b></small>", unsafe_allow_html=True)
 
-        # Swing score — colour-coded by quality
+        # Swing score â€” colour-coded by quality
         _sw = row.get("swing_score", 0.0)
         _sw_color = "#1b5e20" if _sw >= 70 else ("#e65100" if _sw >= 50 else "#555")
         rcols[15].markdown(
@@ -2990,7 +3047,7 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                                   help=f"Lot size: {_lot}" if _lot > 0 else "Qty")
 
         with rcols[17]:
-            # ── Row 1: trade actions ──────────────────────────────────────
+            # â”€â”€ Row 1: trade actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             bc, sc, alc = st.columns(3)
             with bc:
                 _fi = (lot_sizes and sym in lot_sizes and
@@ -3016,25 +3073,25 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                     do_sell(kite, sym, pos["qty"], real_ltp, paper)
                     st.rerun()
 
-            # ── alert popover (row 1, col 3) ──────────────────────────────
+            # â”€â”€ alert popover (row 1, col 3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             with alc:
                 _existing_alerts = [a for a in _load_alerts().get(sym, [])
                                     if not a.get("triggered")]
-                _al_label = "🔔✓" if _existing_alerts else "🔔"
-                with st.popover(_al_label, help="Set price alert → Telegram"):
-                    st.markdown(f"**Price Alert — {sym}**")
-                    st.caption(f"LTP: ₹{ltp:,.2f}")
+                _al_label = "ðŸ””âœ“" if _existing_alerts else "ðŸ””"
+                with st.popover(_al_label, help="Set price alert â†’ Telegram"):
+                    st.markdown(f"**Price Alert â€” {sym}**")
+                    st.caption(f"LTP: â‚¹{ltp:,.2f}")
                     _ap_key  = f"alert_price_{sym}"
                     _ad_key  = f"alert_dir_{sym}"
                     _an_key  = f"alert_note_{sym}"
                     _alert_price = st.number_input(
-                        "Alert price ₹", min_value=0.01,
+                        "Alert price â‚¹", min_value=0.01,
                         value=float(round(ltp, 2)), step=0.05,
                         key=_ap_key, format="%.2f",
                     )
                     _alert_dir = st.radio(
                         "Trigger when price",
-                        ["crosses above ↑", "crosses below ↓"],
+                        ["crosses above â†‘", "crosses below â†“"],
                         key=_ad_key, horizontal=True,
                     )
                     _alert_note = st.text_input(
@@ -3043,31 +3100,31 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                     )
                     _acc_key = f"alert_candle_{sym}"
                     _candle_close = st.toggle(
-                        "🕯 Confirm on 5-min candle close",
+                        "ðŸ•¯ Confirm on 5-min candle close",
                         key=_acc_key, value=False,
                         help="OFF = alert fires as soon as LTP crosses the price (may be a wick).\n"
                              "ON = alert fires only when a 5-min candle CLOSES above/below the price (more reliable).",
                     )
                     if _candle_close:
-                        st.caption("⚡ Will wait for a 5-min candle to close beyond ₹{:.2f}".format(
+                        st.caption("âš¡ Will wait for a 5-min candle to close beyond â‚¹{:.2f}".format(
                             st.session_state.get(_ap_key, ltp)))
-                    if st.button("Set Alert 🔔", key=f"alert_set_{sym}",
+                    if st.button("Set Alert ðŸ””", key=f"alert_set_{sym}",
                                  use_container_width=True, type="primary",
                                  disabled=not _tg_enabled()):
                         _direction = "above" if "above" in _alert_dir else "below"
                         add_price_alert(sym, _alert_price, _direction, _alert_note, _candle_close)
                         _mode = "5m candle close" if _candle_close else "LTP tick"
-                        st.toast(f"🔔 Alert set: {sym} {'≥' if _direction=='above' else '≤'} ₹{_alert_price:,.2f} · {_mode}")
+                        st.toast(f"ðŸ”” Alert set: {sym} {'â‰¥' if _direction=='above' else 'â‰¤'} â‚¹{_alert_price:,.2f} Â· {_mode}")
                     # show active alerts for this stock
                     if _existing_alerts:
                         st.markdown("**Active alerts:**")
                         for _i, _a in enumerate(_existing_alerts):
-                            _dir_sym  = "≥" if _a["direction"] == "above" else "≤"
-                            _cc_badge = " 🕯5m" if _a.get("candle_close") else " ⚡LTP"
+                            _dir_sym  = "â‰¥" if _a["direction"] == "above" else "â‰¤"
+                            _cc_badge = " ðŸ•¯5m" if _a.get("candle_close") else " âš¡LTP"
                             ac1, ac2 = st.columns([3, 1])
-                            ac1.caption(f"{_dir_sym} ₹{_a['price']:,.2f}{_cc_badge}"
-                                        + (f" · {_a['note']}" if _a.get('note') else ""))
-                            if ac2.button("✕", key=f"alert_del_{sym}_{_i}"):
+                            ac1.caption(f"{_dir_sym} â‚¹{_a['price']:,.2f}{_cc_badge}"
+                                        + (f" Â· {_a['note']}" if _a.get('note') else ""))
+                            if ac2.button("âœ•", key=f"alert_del_{sym}_{_i}"):
                                 _all = _load_alerts()
                                 _all[sym] = [x for x in _all.get(sym, [])
                                              if not (not x.get("triggered") and
@@ -3076,10 +3133,10 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                                 _save_alerts(_all)
                                 st.rerun()
 
-            # ── Row 2: alert / share actions ─────────────────────────────
+            # â”€â”€ Row 2: alert / share actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             tgc2, twc2, wac2 = st.columns(3)
             with tgc2:
-                if st.button("📨 TG", key=f"tg_{sym}",
+                if st.button("ðŸ“¨ TG", key=f"tg_{sym}",
                              help="Send signal to Telegram",
                              disabled=not _tg_enabled(),
                              use_container_width=True):
@@ -3090,9 +3147,9 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                     tg_signal(sym, name, real_ltp, _sl, _tgt,
                               row.get("vol_surge", 1.0), row.get("score", 50.0),
                               _strategy, paper)
-                    st.toast(f"📨 Signal sent for {sym}")
+                    st.toast(f"ðŸ“¨ Signal sent for {sym}")
             with twc2:
-                if st.button("🐦 X", key=f"tw_{sym}",
+                if st.button("ðŸ¦ X", key=f"tw_{sym}",
                              help="Post signal to X / Twitter",
                              disabled=not _tw_enabled(),
                              use_container_width=True):
@@ -3105,11 +3162,11 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                                   row.get("vol_surge", 1.0),
                                   row.get("score", 50.0),
                                   _sl, _tgt, _strat, paper):
-                        st.toast(f"🐦 Tweeted {sym}!")
+                        st.toast(f"ðŸ¦ Tweeted {sym}!")
                     else:
-                        st.toast(f"❌ Tweet failed for {sym}", icon="❌")
+                        st.toast(f"âŒ Tweet failed for {sym}", icon="âŒ")
             with wac2:
-                if st.button("📱 WA", key=f"wa_{sym}",
+                if st.button("ðŸ“± WA", key=f"wa_{sym}",
                              help="Send signal to WhatsApp",
                              disabled=not _wa_enabled(),
                              use_container_width=True):
@@ -3119,18 +3176,18 @@ def render_screener_table(final: pd.DataFrame, kite: KiteConnect,
                     _strategy = st.session_state.get("k_strategy", "Momentum")
                     _wa_msg = (
                         f"MANIMINDSMONEY | RAMA\n"
-                        f"{'[PAPER] ' if paper else ''}{sym} — {name}\n"
-                        f"CMP ₹{real_ltp:,.2f}  Vol {row.get('vol_surge', 1.0):.1f}x  Score {row.get('score', 50.0):.0f}\n"
-                        f"Target ₹{_tgt:,.2f}  SL ₹{_sl:,.2f}\n"
+                        f"{'[PAPER] ' if paper else ''}{sym} â€” {name}\n"
+                        f"CMP â‚¹{real_ltp:,.2f}  Vol {row.get('vol_surge', 1.0):.1f}x  Score {row.get('score', 50.0):.0f}\n"
+                        f"Target â‚¹{_tgt:,.2f}  SL â‚¹{_sl:,.2f}\n"
                         f"Strategy: {_strategy}"
                     )
                     if send_whatsapp(_wa_msg):
-                        st.toast(f"📱 WhatsApp sent for {sym}!")
+                        st.toast(f"ðŸ“± WhatsApp sent for {sym}!")
                     else:
-                        st.toast(f"❌ WhatsApp failed for {sym}", icon="❌")
+                        st.toast(f"âŒ WhatsApp failed for {sym}", icon="âŒ")
 
 
-# ── main ──────────────────────────────────────────────────────────────────────
+# â”€â”€ main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def main() -> None:
     kite    = get_kite()
     init_positions(kite)       # restore from file + sync with Kite (once per session)
@@ -3140,10 +3197,10 @@ def main() -> None:
 
     universe = load_universe(UNIVERSE_CHOICE)
 
-    # futures instruments — populated only for futures universe choices
-    if UNIVERSE_CHOICE == "Futures – Current Month":
+    # futures instruments â€” populated only for futures universe choices
+    if UNIVERSE_CHOICE == "Futures â€“ Current Month":
         _fut_inst = load_futures_instruments("current")
-    elif UNIVERSE_CHOICE == "Futures – Next Month":
+    elif UNIVERSE_CHOICE == "Futures â€“ Next Month":
         _fut_inst = load_futures_instruments("next")
     else:
         _fut_inst: dict[str, dict] = {}
@@ -3151,20 +3208,20 @@ def main() -> None:
     # store in session_state so render_screener_table can pass fut_info to do_buy
     st.session_state["_fut_instruments"] = _fut_inst
 
-    with st.spinner(f"Loading fundamentals for {len(universe)} stocks (cached daily)…"):
+    with st.spinner(f"Loading fundamentals for {len(universe)} stocks (cached daily)â€¦"):
         fund_df = load_fundamentals(tuple(universe))
 
     fund_pass, funnel = fundamental_filter(fund_df, enabled=USE_FUNDAMENTAL)
-    # When filter is disabled, use full universe — fund_df may be incomplete
+    # When filter is disabled, use full universe â€” fund_df may be incomplete
     # because _fetch_fund returns None for stocks where yfinance .info fails
     screened = fund_pass["symbol"].tolist() if USE_FUNDAMENTAL else list(universe)
 
-    with st.spinner("Loading daily data — avg volumes + RSI (cached daily)…"):
+    with st.spinner("Loading daily data â€” avg volumes + RSI (cached daily)â€¦"):
         daily_data = load_daily_data(tuple(screened))
 
     if not daily_data:
         st.warning(
-            "⚠️ Daily data (yfinance) unavailable — volume surge, RSI, EMA, and pattern signals "
+            "âš ï¸ Daily data (yfinance) unavailable â€” volume surge, RSI, EMA, and pattern signals "
             "are disabled. Momentum and Swing Trade strategies will show no results; "
             "strategy filters based on % change still work."
         )
@@ -3178,7 +3235,7 @@ def main() -> None:
     _cache_age  = _now - st.session_state.get("_quotes_ts", 0)
     _cache_syms = st.session_state.get("_quotes_syms", [])
     if _cache_age > 30 or set(all_syms) != set(_cache_syms):
-        with st.spinner(f"Fetching live quotes for {len(all_syms)} stocks via Kite…"):
+        with st.spinner(f"Fetching live quotes for {len(all_syms)} stocks via Kiteâ€¦"):
             quotes = load_kite_quotes(kite, all_syms, fut_instruments=_fut_inst or None)
         st.session_state["_quotes_cache"] = quotes
         st.session_state["_quotes_ts"]    = _now
@@ -3186,25 +3243,25 @@ def main() -> None:
     else:
         quotes = st.session_state["_quotes_cache"]
 
-    # ── check price alerts on every refresh ──────────────────────────────────
+    # â”€â”€ check price alerts on every refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     check_price_alerts(quotes)
 
-    # ── order errors (persisted across rerun) ────────────────────────────────
+    # â”€â”€ order errors (persisted across rerun) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for err in st.session_state.pop("order_errors", []):
-        st.error(f"🚨 {err}")
+        st.error(f"ðŸš¨ {err}")
 
-    # ── positions panel (above table) ─────────────────────────────────────────
+    # â”€â”€ positions panel (above table) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     render_positions_panel(kite, quotes, PAPER_TRADE)
 
-    # ── news data — always loaded (cached 2 h), shown in name popovers + filter ─
-    with st.spinner("Loading news (cached 2 h)…"):
+    # â”€â”€ news data â€” always loaded (cached 2 h), shown in name popovers + filter â”€
+    with st.spinner("Loading news (cached 2 h)â€¦"):
         news_data = load_news_data(tuple(screened))
 
-    # ── 15-min VWAP — cached 5 min, used for VWAP filter and display ─────────
-    with st.spinner("Loading 15-min VWAP (cached 5 min)…"):
+    # â”€â”€ 15-min VWAP â€” cached 5 min, used for VWAP filter and display â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    with st.spinner("Loading 15-min VWAP (cached 5 min)â€¦"):
         vwap_15_data = load_15min_vwap(tuple(screened))
 
-    # ── screener table ────────────────────────────────────────────────────────
+    # â”€â”€ screener table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     intraday  = build_intraday_df(quotes, daily_data, news_data, vwap_15_data)
     tech_pass = technical_filter(
         intraday,
@@ -3237,10 +3294,10 @@ def main() -> None:
         else:
             final["name"] = final["name"].fillna(final["symbol"])
 
-    # ── active-filter info bar ───────────────────────────────────────────────
+    # â”€â”€ active-filter info bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     _finfo = []
-    if USE_PCT_FILTER:  _finfo.append(f"Chg≥{MIN_PCT_CHANGE}%")
-    if USE_VOL_FILTER:  _finfo.append(f"Vol≥{VOL_SURGE_MIN}×")
+    if USE_PCT_FILTER:  _finfo.append(f"Chgâ‰¥{MIN_PCT_CHANGE}%")
+    if USE_VOL_FILTER:  _finfo.append(f"Volâ‰¥{VOL_SURGE_MIN}Ã—")
     if USE_RSI_FILTER:  _finfo.append(f"RSI {RSI_MIN}-{RSI_MAX}")
     if USE_VWAP_FILTER: _finfo.append(VWAP_SIDE)
     if USE_BB_SQUEEZE:       _finfo.append("BB Squeeze")
@@ -3253,7 +3310,7 @@ def main() -> None:
     if USE_EMA200:           _finfo.append("Above EMA200")
     if USE_NEWS_FILTER:      _finfo.append("Positive news")
     if USE_RESULTS_FILTER:   _finfo.append("Recent results")
-    _ftxt = " · ".join(_finfo) if _finfo else "no filters — all stocks shown"
+    _ftxt = " Â· ".join(_finfo) if _finfo else "no filters â€” all stocks shown"
     st.info(f"**{STRATEGY}** | active filters: {_ftxt} | matched: **{len(tech_pass)}** / {len(intraday)}")
 
     # Helpful tip when strategy returns 0 results
@@ -3261,23 +3318,23 @@ def main() -> None:
     if tech_pass.empty and intraday is not None and not intraday.empty:
         if STRATEGY in _pattern_strategies:
             st.warning(
-                f"🔍 No stocks match the **{STRATEGY}** pattern today. "
-                "These are low-frequency signals — try **Range Breakout (5-day)** or "
+                f"ðŸ” No stocks match the **{STRATEGY}** pattern today. "
+                "These are low-frequency signals â€” try **Range Breakout (5-day)** or "
                 "**Momentum (already moving)** for more results, or switch to "
                 "**Custom (manual filters)** to relax individual conditions."
             )
         elif STRATEGY == "Swing Trade (3-5 day)":
             st.warning(
-                "🔍 No stocks pass all Swing Trade filters (EMA alignment + RSI 50-72). "
+                "ðŸ” No stocks pass all Swing Trade filters (EMA alignment + RSI 50-72). "
                 "Try disabling one EMA filter or widening the RSI range in the sidebar."
             )
         elif STRATEGY == "Range Breakout (5-day)":
             st.warning(
-                "🔍 No range breakout stocks today. This strategy needs yesterday's close "
-                "to exceed the 5-day high — fewer setups on sideways/down days."
+                "ðŸ” No range breakout stocks today. This strategy needs yesterday's close "
+                "to exceed the 5-day high â€” fewer setups on sideways/down days."
             )
 
-    # ── auto Telegram top-5 (fires at most every 5 min when top-5 changes) ───
+    # â”€â”€ auto Telegram top-5 (fires at most every 5 min when top-5 changes) â”€â”€â”€
     tg_top5(final, STRATEGY, PAPER_TRADE)
 
     # metrics
@@ -3286,28 +3343,28 @@ def main() -> None:
     c2.metric("Fundamental pass", len(screened))
     c3.metric("Live quotes",      len(quotes))
     c4.metric(f"{STRATEGY[:18]}",  len(final))
-    c5.metric("Top score",        f"{final['score'].max():.0f}/100" if not final.empty else "—")
+    c5.metric("Top score",        f"{final['score'].max():.0f}/100" if not final.empty else "â€”")
 
     st.markdown(
         f"<p style='text-align:right;color:#aaa;font-size:12px'>"
-        f"⏱ {datetime.now():%Y-%m-%d %H:%M:%S} &nbsp;·&nbsp; "
-        f"{'📄 PAPER TRADE' if PAPER_TRADE else '🔴 LIVE TRADE'}"
+        f"â± {datetime.now():%Y-%m-%d %H:%M:%S} &nbsp;Â·&nbsp; "
+        f"{'ðŸ“„ PAPER TRADE' if PAPER_TRADE else 'ðŸ”´ LIVE TRADE'}"
         f"</p>",
         unsafe_allow_html=True,
     )
 
-    # futures banner — show expiry info + lot size reminder
+    # futures banner â€” show expiry info + lot size reminder
     if lot_sizes:
         import datetime as _dt
         _lots_loaded = len(lot_sizes)
         st.info(
-            f"📅 **Futures mode** — {_lots_loaded} stocks loaded · "
-            f"{'Current' if 'Current' in UNIVERSE_CHOICE else 'Next'} month expiry · "
+            f"ðŸ“… **Futures mode** â€” {_lots_loaded} stocks loaded Â· "
+            f"{'Current' if 'Current' in UNIVERSE_CHOICE else 'Next'} month expiry Â· "
             f"Qty field defaults to lot size per stock (step = 1 lot). "
             f"Hover qty field to see lot size."
         )
 
-    # ── Top-10 ticker strip ───────────────────────────────────────────────────
+    # â”€â”€ Top-10 ticker strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if not final.empty:
         _top10 = final.nlargest(min(10, len(final)), "score")
         _chips = []
@@ -3315,7 +3372,7 @@ def main() -> None:
             _pct  = float(_r.get("pct_change", 0.0))
             _col  = "#1b8a3e" if _pct >= 0 else "#c0392b"       # green / red
             _bg   = "#e8f5e9" if _pct >= 0 else "#fdecea"
-            _sign = "▲" if _pct >= 0 else "▼"
+            _sign = "â–²" if _pct >= 0 else "â–¼"
             _chip = (
                 f"<span style='background:{_bg};color:{_col};"
                 f"padding:2px 8px;border-radius:12px;"
@@ -3335,26 +3392,26 @@ def main() -> None:
     render_screener_table(final, kite, quotes, PAPER_TRADE,
                           news_data=news_data, lot_sizes=lot_sizes)
 
-    with st.expander("🔍 Filter funnel"):
+    with st.expander("ðŸ” Filter funnel"):
         st.markdown(f"""
 | Stage | Count |
 |-------|-------|
 | Universe | {funnel['total']} |
-| After market cap ≥ {MARKET_CAP_MIN_CR:,.0f} Cr | {funnel['after_mktcap']} |
-| After PE ≤ {PE_MAX} | {funnel['after_pe']} |
-| After EPS ≥ {EPS_MIN} | {funnel['after_eps']} |
-| After institutional ≥ {INST_MIN_PCT:.0f}% | {funnel['after_inst']} |
+| After market cap â‰¥ {MARKET_CAP_MIN_CR:,.0f} Cr | {funnel['after_mktcap']} |
+| After PE â‰¤ {PE_MAX} | {funnel['after_pe']} |
+| After EPS â‰¥ {EPS_MIN} | {funnel['after_eps']} |
+| After institutional â‰¥ {INST_MIN_PCT:.0f}% | {funnel['after_inst']} |
 | After technical filter | {len(final)} |
         """)
 
-    with st.expander("📊 Score breakdown"):
+    with st.expander("ðŸ“Š Score breakdown"):
         st.markdown("""
 | Component | Weight | Basis |
 |-----------|--------|-------|
-| Volume Score | 0–40 | Volume ÷ 20-day avg |
-| Momentum Score | 0–40 | % price change vs prev close |
-| Resistance Score | 0–20 | Closeness to 52-week high |
-| **Total** | **0–100** | |
+| Volume Score | 0â€“40 | Volume Ã· 20-day avg |
+| Momentum Score | 0â€“40 | % price change vs prev close |
+| Resistance Score | 0â€“20 | Closeness to 52-week high |
+| **Total** | **0â€“100** | |
         """)
 
 
@@ -3363,9 +3420,9 @@ def _check_login() -> bool:
     if st.session_state.get("_rama_auth"):
         return True
 
-    st.set_page_config(page_title="RAMA — Login", page_icon="🏦", layout="centered")
+    st.set_page_config(page_title="RAMA â€” Login", page_icon="ðŸ¦", layout="centered")
     st.markdown(
-        "<h2 style='text-align:center;margin-bottom:4px'>🏦 MANIMINDSMONEY</h2>"
+        "<h2 style='text-align:center;margin-bottom:4px'>ðŸ¦ MANIMINDSMONEY</h2>"
         "<p style='text-align:center;color:#888;margin-top:0'>RAMA Screener</p>",
         unsafe_allow_html=True,
     )
@@ -3390,7 +3447,7 @@ def _check_login() -> bool:
 if _check_login():
     main()
 
-# ── auto-refresh (non-blocking) ───────────────────────────────────────────────
+# â”€â”€ auto-refresh (non-blocking) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # st_autorefresh triggers a client-side page reload every REFRESH_SECONDS.
 # Unlike time.sleep(), it does NOT block the Python process, so filter and
 # widget interactions respond instantly at any point during the interval.
