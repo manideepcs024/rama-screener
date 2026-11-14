@@ -1,14 +1,17 @@
+# Pin protobuf to avoid Python 3.14 metaclass crash
+protobuf>=4.25.0,<5.0.0
+
 # Core
 kiteconnect==4.0.0
 pandas>=2.1.0
 numpy>=1.26.0,<2.0.0
-requests==2.32.3
+requests>=2.28.0
 python-dotenv>=1.0.0
 
 # Market data
 yfinance>=0.2.40
 
-# Technical analysis (pure Python — no C binary needed)
+# Technical analysis (pure Python)
 pandas-ta-classic
 
 # Web / Streamlit
@@ -20,13 +23,13 @@ python-telegram-bot==13.15
 tweepy>=4.14.0
 
 # Sentiment / news
-google-generativeai==0.7.1
-newsapi-python==0.2.7
-textblob==0.18.0.post0
-beautifulsoup4==4.12.3
+google-generativeai>=0.7.0
+newsapi-python>=0.2.7
+textblob>=0.17.0
+beautifulsoup4>=4.12.0
 lxml>=5.2.0
 
 # Misc
-openpyxl==3.1.2
-PyYAML==6.0.1
-aiohttp==3.9.5
+openpyxl>=3.1.0
+PyYAML>=6.0.0
+aiohttp>=3.9.0
