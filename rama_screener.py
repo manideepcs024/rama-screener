@@ -790,26 +790,56 @@ with st.sidebar:
 
 
 # ── Kite auth ─────────────────────────────────────────────────────────────────
+_TOKEN_FILE = Path(__file__).resolve().parent / "output" / "kite_token.json"
+
+
 def _save_token(token: str) -> None:
-    lines = ENV_PATH.read_text(encoding="utf-8").splitlines() if ENV_PATH.exists() else []
-    out, found = [], False
-    for line in lines:
-        if line.startswith("ZERODHA_ACCESS_TOKEN="):
-            out.append(f"ZERODHA_ACCESS_TOKEN={token}"); found = True
-        else:
-            out.append(line)
-    if not found:
-        out.append(f"ZERODHA_ACCESS_TOKEN={token}")
-    ENV_PATH.write_text("\n".join(out) + "\n", encoding="utf-8")
+    """Save token to both .env (local) and output/kite_token.json (cloud shared)."""
+    # local .env
+    if ENV_PATH.exists():
+        lines = ENV_PATH.read_text(encoding="utf-8").splitlines()
+        out, found = [], False
+        for line in lines:
+            if line.startswith("ZERODHA_ACCESS_TOKEN="):
+                out.append(f"ZERODHA_ACCESS_TOKEN={token}"); found = True
+            else:
+                out.append(line)
+        if not found:
+            out.append(f"ZERODHA_ACCESS_TOKEN={token}")
+        try:
+            ENV_PATH.write_text("\n".join(out) + "\n", encoding="utf-8")
+        except Exception:
+            pass
+    # shared file — persists across browser sessions on the same server instance
+    try:
+        _TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+        import json as _j
+        _j.dump({"token": token, "saved_at": datetime.now().isoformat()},
+                open(_TOKEN_FILE, "w"))
+    except Exception:
+        pass
+    os.environ["ZERODHA_ACCESS_TOKEN"] = token
+
+
+def _load_saved_token() -> str:
+    """Read token from shared file first, fallback to env var."""
+    try:
+        if _TOKEN_FILE.exists():
+            import json as _j
+            data = _j.load(open(_TOKEN_FILE))
+            return data.get("token", "").strip()
+    except Exception:
+        pass
+    return os.getenv("ZERODHA_ACCESS_TOKEN", "").strip()
 
 
 def _kite_connect() -> KiteConnect:
     load_dotenv(ENV_PATH, override=True)
     api_key    = os.getenv("ZERODHA_API_KEY", "").strip()
     api_secret = os.getenv("ZERODHA_API_SECRET", "").strip()
-    token      = os.getenv("ZERODHA_ACCESS_TOKEN", "").strip()
+    token      = _load_saved_token()
     if not api_key:
-        st.error("ZERODHA_API_KEY missing in .env"); st.stop()
+        st.error("ZERODHA_API_KEY missing in .env / secrets"); st.stop()
 
     kite = KiteConnect(api_key=api_key)
     if token:
@@ -820,26 +850,55 @@ def _kite_connect() -> KiteConnect:
         except Exception:
             pass
 
-    st.warning("⚠️ Kite access token expired. Log in below.")
-    st.markdown(f"### [Click here to log in to Zerodha]({kite.login_url()})")
-    raw = st.text_input("Paste redirect URL or request_token:")
-    if not raw:
-        st.stop()
-    req_token = (parse_qs(urlparse(raw).query).get("request_token", [""])[0]
-                 if "request_token=" in raw else raw.strip())
-    if not req_token:
-        st.error("Could not extract request_token."); st.stop()
-    if not api_secret:
-        st.error("ZERODHA_API_SECRET missing in .env"); st.stop()
-    try:
-        data = kite.generate_session(req_token, api_secret=api_secret)
-    except Exception as e:
-        st.error(f"Login failed: {e}"); st.stop()
-    kite.set_access_token(data["access_token"])
-    _save_token(data["access_token"])
-    os.environ["ZERODHA_ACCESS_TOKEN"] = data["access_token"]
-    st.success(f"✅ Logged in as **{data.get('user_name')}**. Reloading…")
-    time.sleep(1); st.rerun()
+    # ── Token expired — show update UI ────────────────────────────────────────
+    st.warning("⚠️ Kite access token expired or not set.")
+    st.markdown("### Update Zerodha Access Token")
+    st.info(
+        "**How to get today's token:**\n"
+        "1. Open Kite app / kite.zerodha.com on your phone\n"
+        "2. You are already logged in — the session is active\n"
+        "3. Copy the access token from Settings → API or ask the account holder\n\n"
+        "**OR** log in via URL below to auto-generate:"
+    )
+
+    tab1, tab2 = st.tabs(["📋 Paste Access Token directly", "🔗 Login via Zerodha URL"])
+
+    with tab1:
+        st.caption("Paste the access token (the account holder can share this daily)")
+        _direct_token = st.text_input("Access Token", type="password",
+                                      placeholder="Paste access token here…",
+                                      key="direct_token_input")
+        if st.button("✅ Set Token", key="set_direct_token", type="primary",
+                     disabled=not _direct_token):
+            kite.set_access_token(_direct_token.strip())
+            try:
+                profile = kite.profile()
+                _save_token(_direct_token.strip())
+                st.success(f"✅ Token set! Logged in as **{profile.get('user_name')}**. Reloading…")
+                time.sleep(1); st.rerun()
+            except Exception as e:
+                st.error(f"Invalid token: {e}")
+
+    with tab2:
+        st.markdown(f"[Click here to log in to Zerodha]({kite.login_url()})")
+        raw = st.text_input("Paste redirect URL or request_token:", key="kite_redirect_url")
+        if raw:
+            req_token = (parse_qs(urlparse(raw).query).get("request_token", [""])[0]
+                         if "request_token=" in raw else raw.strip())
+            if not req_token:
+                st.error("Could not extract request_token.")
+            elif not api_secret:
+                st.error("ZERODHA_API_SECRET missing in secrets.")
+            else:
+                try:
+                    data = kite.generate_session(req_token, api_secret=api_secret)
+                    kite.set_access_token(data["access_token"])
+                    _save_token(data["access_token"])
+                    st.success(f"✅ Logged in as **{data.get('user_name')}**. Reloading…")
+                    time.sleep(1); st.rerun()
+                except Exception as e:
+                    st.error(f"Login failed: {e}")
+    st.stop()
 
 
 def get_kite() -> KiteConnect:
