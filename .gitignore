@@ -1,6 +1,9 @@
 # secrets — never commit
 .env
 
+# local-only trading pages (do NOT push to Streamlit Cloud)
+pages/4_Fast_Trade.py
+
 # runtime output (positions, alerts, journal)
 output/*.json
 

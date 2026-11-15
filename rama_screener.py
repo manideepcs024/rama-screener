@@ -562,8 +562,16 @@ st.markdown(
     .main .block-container { overflow-x: hidden !important; max-width: 100% !important; }
     /* Mobile column labels: hidden on desktop */
     .mh { display: none; }
-    /* Override Streamlit's -1rem bottom margin on column wrappers */
-    .st-emotion-cache-1y4lfdl { margin-bottom: 0 !important; }
+    /* Override Streamlit's -1rem bottom margin — use stable selectors, not cache classes */
+    div[data-testid="column"] > div[data-testid="stVerticalBlock"] > div { margin-bottom: 0 !important; }
+    /* stMarkdownContainer: target the container itself, its children, AND its wrapper parent */
+    div[data-testid="stMarkdownContainer"] { margin-bottom: 0 !important; }
+    div[data-testid="stMarkdownContainer"] > p { margin-bottom: 0 !important; }
+    div[data-testid="stMarkdownContainer"] > div { margin-bottom: 0 !important; }
+    /* Streamlit places -1rem on the anonymous wrapper div that holds stMarkdownContainer */
+    div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stMarkdownContainer"]) { margin-bottom: 0 !important; }
+    /* Fallback for older Streamlit versions that nest one level deeper */
+    div[data-testid="stVerticalBlock"] > div > div:has(> div[data-testid="stMarkdownContainer"]) { margin-bottom: 0 !important; }
 
     /* ── Global mobile layout ─────────────────────────────────── */
     @media (max-width: 768px) {
