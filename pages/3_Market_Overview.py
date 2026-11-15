@@ -490,6 +490,7 @@ hr.sep { border:none;border-top:1px solid #ececec;margin:4px 0 16px 0; }
 div[data-testid="stMarkdownContainer"] { margin-bottom: 0 !important; }
 div[data-testid="stMarkdownContainer"] > p { margin-bottom: 0 !important; }
 div[data-testid="stMarkdownContainer"] > div { margin-bottom: 0 !important; }
+#flonnect-my-app { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 

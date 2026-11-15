@@ -572,6 +572,8 @@ st.markdown(
     div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stMarkdownContainer"]) { margin-bottom: 0 !important; }
     /* Fallback for older Streamlit versions that nest one level deeper */
     div[data-testid="stVerticalBlock"] > div > div:has(> div[data-testid="stMarkdownContainer"]) { margin-bottom: 0 !important; }
+    /* Hide browser-injected overlay */
+    #flonnect-my-app { display: none !important; }
 
     /* ── Global mobile layout ─────────────────────────────────── */
     @media (max-width: 768px) {
