@@ -766,34 +766,45 @@ for idx_name, container in [("NIFTY", col_nifty), ("SENSEX", col_sensex)]:
                 st.toast(f"⚠️ {idx_name} position was manually closed in Zerodha — delinked.")
                 pos = {}
 
-        if not pos.get("active"):
-            # ── signal panel ──────────────────────────────────────────────────
-            sr    = sig_result
-            conf  = sr["confidence"]
-            conf_badge = {
-                "HIGH":   ("HIGH CONFIDENCE", "#1b5e20", "#e8f5e9"),
-                "MEDIUM": ("MEDIUM CONFIDENCE", "#e65100", "#fff3e0"),
-                "LOW":    ("LOW CONFIDENCE",  "#888",    "#f5f5f5"),
-            }.get(conf, ("", "#888", "#f5f5f5"))
+        # ── signal panel (always visible — even during open position) ──────────
+        sr    = sig_result
+        conf  = sr["confidence"]
+        conf_badge = {
+            "HIGH":   ("HIGH CONFIDENCE", "#1b5e20", "#e8f5e9"),
+            "MEDIUM": ("MEDIUM CONFIDENCE", "#e65100", "#fff3e0"),
+            "LOW":    ("LOW CONFIDENCE",  "#888",    "#f5f5f5"),
+        }.get(conf, ("", "#888", "#f5f5f5"))
 
+        st.markdown(
+            f"<div style='border:2px solid {sr['rec_color']};border-radius:10px;"
+            f"padding:12px 16px;margin:6px 0;background:#fafafa'>"
+            f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:8px'>"
+            f"<span style='font-size:17px;font-weight:900;color:{sr['rec_color']}'>"
+            f"{sr['recommendation']}</span>"
+            f"<span style='font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;"
+            f"color:{conf_badge[1]};background:{conf_badge[2]}'>{conf_badge[0]}</span>"
+            f"<span style='font-size:11px;color:#888;margin-left:auto'>"
+            f"CE +{sr['ce_score']} &nbsp; PE -{sr['pe_score']} &nbsp; Net: {sr['score']:+d}"
+            f"</span></div>"
+            + "".join(
+                f"<div style='font-size:11px;line-height:1.9;color:{c}'>"
+                f"{'✓' if v > 0 else ('✗' if v < 0 else '—')} {desc}</div>"
+                for desc, v, c in sr["signals"]
+            )
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("<hr style='margin:8px 0'>", unsafe_allow_html=True)
+
+        if not pos.get("active"):
+            # ── BUY card ──────────────────────────────────────────────────────
             st.markdown(
-                f"<div style='border:2px solid {sr['rec_color']};border-radius:10px;"
-                f"padding:12px 16px;margin:6px 0;background:#fafafa'>"
-                f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:8px'>"
-                f"<span style='font-size:17px;font-weight:900;color:{sr['rec_color']}'>"
-                f"{sr['recommendation']}</span>"
-                f"<span style='font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;"
-                f"color:{conf_badge[1]};background:{conf_badge[2]}'>{conf_badge[0]}</span>"
-                f"<span style='font-size:11px;color:#888;margin-left:auto'>"
-                f"CE score: +{sr['ce_score']} &nbsp; PE score: -{sr['pe_score']} "
-                f"&nbsp; Net: {sr['score']:+d}</span>"
-                f"</div>"
-                + "".join(
-                    f"<div style='font-size:11px;line-height:1.9;color:{c}'>"
-                    f"{'✓' if v > 0 else ('✗' if v < 0 else '—')} {desc}</div>"
-                    for desc, v, c in sr["signals"]
-                )
-                + "</div>",
+                "<div style='border:1px solid #e0e0e0;border-radius:10px;"
+                "padding:14px 16px;background:#fff;margin-bottom:6px'>"
+                "<div style='font-size:12px;font-weight:700;color:#555;"
+                "text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px'>"
+                "Place Order</div>",
                 unsafe_allow_html=True,
             )
 
@@ -900,8 +911,18 @@ for idx_name, container in [("NIFTY", col_nifty), ("SENSEX", col_sensex)]:
                 except Exception as e:
                     st.error(f"Order failed: {e}")
 
+            st.markdown("</div>", unsafe_allow_html=True)
+
         else:
-            # ── open position → show position card ───────────────────────────
+            # ── POSITION card ─────────────────────────────────────────────────
+            st.markdown(
+                "<div style='border:1px solid #e0e0e0;border-radius:10px;"
+                "padding:14px 16px;background:#fff;margin-bottom:6px'>"
+                "<div style='font-size:12px;font-weight:700;color:#555;"
+                "text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px'>"
+                "Open Position</div>",
+                unsafe_allow_html=True,
+            )
             sym          = pos["tradingsymbol"]
             exchange     = pos["exchange"]
             opt_type     = pos["type"]
@@ -1042,5 +1063,7 @@ for idx_name, container in [("NIFTY", col_nifty), ("SENSEX", col_sensex)]:
                             st.rerun()
                         except Exception as e:
                             st.error(f"Sell failed: {e}")
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
