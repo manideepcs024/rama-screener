@@ -1005,25 +1005,40 @@ for idx_name, container in [("NIFTY", col_nifty), ("SENSEX", col_sensex)]:
                     st.rerun()
 
             with a3:
-                half_qty = rem_qty // 2
-                partial_ok = half_qty >= 1 and not pos.get("partial_done")
+                pct_key = f"partial_pct_{idx_name}"
+                pct_opts = ["25%", "50%", "75%", "100%"]
+                sel_pct = st.selectbox(
+                    "Book profit",
+                    pct_opts,
+                    index=1,
+                    key=pct_key,
+                    label_visibility="collapsed",
+                )
+                sell_frac = int(sel_pct.rstrip("%")) / 100
+                sell_qty  = max(1, int(rem_qty * sell_frac))
+                new_rem   = rem_qty - sell_qty
+                is_full   = sell_qty >= rem_qty
+                partial_ok = rem_qty >= 1
                 if st.button(
-                    f"Partial 50% ({half_qty})",
+                    f"Book {sel_pct} ({sell_qty})",
                     key=f"partial_{idx_name}",
                     use_container_width=True,
                     disabled=not partial_ok,
                 ):
                     try:
-                        # cancel old SL, sell half, new SL for remainder
                         _cancel_order(kite, sl_oid, paper)
-                        _place_market_order(kite, exchange, sym, "SELL", half_qty, paper)
-                        new_rem = rem_qty - half_qty
-                        new_sl_oid = _place_slm_order(kite, exchange, sym, new_rem, sl, paper)
-                        pos["remaining_qty"] = new_rem
-                        pos["sl_order_id"]   = new_sl_oid
-                        pos["partial_done"]  = True
-                        _set_pos(idx_name, pos)
-                        st.toast(f"Partial booked {half_qty} qty, {new_rem} remaining.")
+                        _place_market_order(kite, exchange, sym, "SELL", sell_qty, paper)
+                        if is_full or new_rem < 1:
+                            _clear_pos(idx_name)
+                            mode_str = "PAPER" if paper else "LIVE"
+                            st.success(f"{mode_str} Full exit — {sell_qty} qty sold.")
+                        else:
+                            new_sl_oid = _place_slm_order(kite, exchange, sym, new_rem, sl, paper)
+                            pos["remaining_qty"] = new_rem
+                            pos["sl_order_id"]   = new_sl_oid
+                            pos["partial_done"]  = True
+                            _set_pos(idx_name, pos)
+                            st.toast(f"Booked {sell_qty} qty ({sel_pct}), {new_rem} remaining.")
                         st.rerun()
                     except Exception as e:
                         st.error(f"Partial failed: {e}")
