@@ -20,6 +20,7 @@ JOURNAL_FILE    = _ROOT / "output" / "trade_journal.json"
 MANUAL_FILE     = _ROOT / "output" / "manual_journal.json"
 
 st.set_page_config(page_title="Trade Journal", page_icon="📓", layout="wide")
+from _auth import require_login; require_login()
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 def _load_positions() -> dict:

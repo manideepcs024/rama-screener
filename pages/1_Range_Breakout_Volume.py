@@ -243,6 +243,7 @@ def send_rb_signal(row: pd.Series) -> None:
 
 # ── Page ──────────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Range Breakout Screener", page_icon="🚀", layout="wide")
+from _auth import require_login; require_login()
 st.title("🚀 Range Breakout + Volume Screener")
 st.caption("Mirrors ChartInk: Close > 20D High  |  Volume ≥ 3×  |  % Change ≥ 3%")
 

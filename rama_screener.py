@@ -604,6 +604,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ── session-scoped login ──────────────────────────────────────────────────────
+from _auth import require_login
+require_login()
+
 # ── session state init ────────────────────────────────────────────────────────
 if "positions" not in st.session_state:
     st.session_state.positions = {}   # {symbol: position_dict}

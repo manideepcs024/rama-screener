@@ -509,6 +509,7 @@ st.set_page_config(
     page_icon="zap",
     layout="wide",
 )
+from _auth import require_login; require_login()
 
 try:
     from streamlit_autorefresh import st_autorefresh  # type: ignore
