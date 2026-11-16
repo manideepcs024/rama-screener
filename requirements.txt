@@ -14,6 +14,7 @@ pandas-ta-classic
 # Web / Streamlit
 streamlit
 streamlit-autorefresh>=1.0.1
+extra-streamlit-components>=0.1.60
 
 # Alerts
 python-telegram-bot==13.15
