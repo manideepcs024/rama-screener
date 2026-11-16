@@ -642,6 +642,25 @@ with st.sidebar:
         st.warning("⚠️ ~1800 stocks — first fundamental load may take 2-3 min (cached after).")
 
     # ── strategy selector ─────────────────────────────────────────────────────
+    def _on_strategy_change() -> None:
+        """Called BEFORE the next rerun — sets correct filter defaults for new strategy."""
+        s  = st.session_state["k_strategy"]
+        sk = s.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "")
+        is_swing = s == "Swing Trade (3-5 day)"
+        is_bp    = s == "Buying Pressure"
+        is_mom   = s == "Momentum (already moving)"
+        is_vol   = s in ("Momentum (already moving)", "Range Breakout (5-day)", "Buying Pressure")
+        # explicitly write the correct defaults so widgets pick them up
+        st.session_state[f"k_pct_on_{sk}"]  = is_mom
+        st.session_state[f"k_vol_on_{sk}"]  = is_vol
+        st.session_state[f"k_rsi_on_{sk}"]  = is_swing
+        st.session_state[f"k_rsi_rng_{sk}"] = (50, 72) if is_swing else (30, 70)
+        st.session_state[f"k_vwap_on_{sk}"] = False
+        st.session_state[f"k_bs_on_{sk}"]   = is_bp
+        st.session_state[f"k_ema21_{sk}"]   = is_swing
+        st.session_state[f"k_ema50_{sk}"]   = is_swing
+        st.session_state[f"k_ema200_{sk}"]  = is_swing
+
     st.subheader("Strategy")
     STRATEGY = st.selectbox(
         "Select strategy",
@@ -657,18 +676,8 @@ with st.sidebar:
         ],
         index=0,
         key="k_strategy",
+        on_change=_on_strategy_change,
     )
-
-    # When strategy changes, wipe scoped widget keys so defaults reset correctly
-    _prev_strategy = st.session_state.get("_prev_strategy")
-    if _prev_strategy != STRATEGY:
-        if _prev_strategy:
-            _old_sk = _prev_strategy.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "")
-            _keys_to_clear = [k for k in st.session_state if k.endswith(f"_{_old_sk}")]
-            for _k in _keys_to_clear:
-                del st.session_state[_k]
-        st.session_state["_prev_strategy"] = STRATEGY
-        st.rerun()
 
     # ── strategy descriptions ─────────────────────────────────────────────────
     _STRATEGY_DESC = {

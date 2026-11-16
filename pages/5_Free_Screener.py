@@ -168,66 +168,57 @@ def _nr7(highs: pd.Series, lows: pd.Series) -> bool:
     return float(ranges.iloc[-1]) == float(ranges.min())
 
 
-def _fetch_daily_one(sym: str) -> tuple[str, dict]:
+def _parse_sym_daily(sym: str, raw: object, single: bool) -> tuple[str, dict]:
+    """Extract daily indicators for one symbol from a batch yf.download result."""
     try:
-        ticker = yf.Ticker(sym + ".NS")
-        df = ticker.history(period="1y", interval="1d", auto_adjust=True)
-        if df is None or len(df) < 20:
+        sym_yf = sym + ".NS"
+        closes = (raw["Close"]  if single else raw["Close"][sym_yf]).dropna()
+        highs  = (raw["High"]   if single else raw["High"][sym_yf]).dropna()
+        lows   = (raw["Low"]    if single else raw["Low"][sym_yf]).dropna()
+        opens  = (raw["Open"]   if single else raw["Open"][sym_yf]).dropna()
+        vols   = (raw["Volume"] if single else raw["Volume"][sym_yf]).dropna()
+        if len(closes) < 20:
             return sym, {}
-        closes = df["Close"].dropna()
-        highs  = df["High"].dropna()
-        lows   = df["Low"].dropna()
-        opens  = df["Open"].dropna()
-        vols   = df["Volume"].dropna()
-        rsi    = _calc_rsi(closes)
-        adx    = _calc_adx(highs, lows, closes)
+        rsi     = _calc_rsi(closes)
+        adx     = _calc_adx(highs, lows, closes)
         avg_vol = float(vols.tail(20).mean()) if len(vols) >= 20 else float(vols.mean())
-        ema21  = float(closes.ewm(span=21,  adjust=False).mean().iloc[-1])
-        ema50  = float(closes.ewm(span=50,  adjust=False).mean().iloc[-1])
-        ema200 = float(closes.ewm(span=200, adjust=False).mean().iloc[-1])
-        ltp    = float(closes.iloc[-1])
-        h52w   = float(highs.tail(252).max())
-        l52w   = float(lows.tail(252).min())
-        # patterns
-        nr7_flag     = _nr7(highs, lows)
-        bb_sq        = _bb_squeeze(closes)
-        # inside bar: today's range inside yesterday's
-        inside_bar = (len(df) >= 2 and
+        ema21   = float(closes.ewm(span=21,  adjust=False).mean().iloc[-1])
+        ema50   = float(closes.ewm(span=50,  adjust=False).mean().iloc[-1])
+        ema200  = float(closes.ewm(span=200, adjust=False).mean().iloc[-1])
+        ltp     = float(closes.iloc[-1])
+        h52w    = float(highs.tail(252).max())
+        l52w    = float(lows.tail(252).min())
+        nr7_flag   = _nr7(highs, lows)
+        bb_sq      = _bb_squeeze(closes)
+        inside_bar = (len(closes) >= 2 and
                       float(highs.iloc[-1]) <= float(highs.iloc[-2]) and
                       float(lows.iloc[-1])  >= float(lows.iloc[-2]))
-        # range breakout 5d: today's close > 5-day high of prior bars
-        range_bo = (len(df) >= 6 and
-                    float(closes.iloc[-1]) > float(highs.iloc[-6:-1].max()))
-        # VCP: 3 successive range contractions
-        if len(df) >= 4:
-            r = [(float(highs.iloc[i]) - float(lows.iloc[i])) for i in range(-4, 0)]
+        range_bo   = (len(closes) >= 6 and
+                      float(closes.iloc[-1]) > float(highs.iloc[-6:-1].max()))
+        if len(closes) >= 4:
+            r   = [(float(highs.iloc[i]) - float(lows.iloc[i])) for i in range(-4, 0)]
             vcp = r[-1] < r[-2] < r[-3]
         else:
             vcp = False
-        # MACD
         ema12 = closes.ewm(span=12, adjust=False).mean()
         ema26 = closes.ewm(span=26, adjust=False).mean()
-        macd_line   = ema12 - ema26
-        signal_line = macd_line.ewm(span=9, adjust=False).mean()
+        macd_line    = ema12 - ema26
+        signal_line  = macd_line.ewm(span=9, adjust=False).mean()
         macd_bullish = float(macd_line.iloc[-1]) > float(signal_line.iloc[-1])
-        # buying pressure: ratio of up-days in last 10
         last10_cl = closes.tail(11)
-        last10_op = opens.tail(11)
+        last10_op = opens.reindex(last10_cl.index)
         up_days   = int(sum(1 for c, o in zip(last10_cl, last10_op) if c > o))
-        buy_days  = up_days
-        sell_days = 10 - up_days
+        prev_close = float(closes.iloc[-2]) if len(closes) >= 2 else float(closes.iloc[-1])
         return sym, {
-            "avg_vol": avg_vol,
-            "rsi": rsi, "adx": adx,
+            "avg_vol": avg_vol, "rsi": rsi, "adx": adx,
             "ema21": ema21, "ema50": ema50, "ema200": ema200,
-            "above_ema21": ltp > ema21,
-            "above_ema50": ltp > ema50,
-            "above_ema200": ltp > ema200,
+            "above_ema21": ltp > ema21, "above_ema50": ltp > ema50, "above_ema200": ltp > ema200,
             "high_52w_yf": h52w, "low_52w_yf": l52w,
+            "prev_close": prev_close,
             "bb_squeeze": bb_sq, "nr7": nr7_flag,
             "inside_bar": inside_bar, "range_bo": range_bo, "vcp": vcp,
             "macd_bullish": macd_bullish,
-            "up_days": up_days, "buy_days": buy_days, "sell_days": sell_days,
+            "up_days": up_days, "buy_days": up_days, "sell_days": 10 - up_days,
         }
     except Exception:
         return sym, {}
@@ -235,11 +226,29 @@ def _fetch_daily_one(sym: str) -> tuple[str, dict]:
 
 @st.cache_data(ttl=86_400, show_spinner=False)
 def load_daily_data(symbols: tuple) -> dict[str, dict]:
+    """Batch-download 1 year of daily OHLCV for all symbols in one yf.download call."""
+    if not symbols:
+        return {}
     result: dict[str, dict] = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-        for sym, data in ex.map(_fetch_daily_one, symbols):
-            if data:
-                result[sym] = data
+    chunk_size = 100   # yfinance handles ~100 symbols comfortably per call
+    sym_list   = list(symbols)
+    for i in range(0, len(sym_list), chunk_size):
+        chunk     = sym_list[i:i + chunk_size]
+        yf_syms   = [s + ".NS" for s in chunk]
+        single    = len(chunk) == 1
+        try:
+            raw = yf.download(
+                yf_syms, period="1y", interval="1d",
+                auto_adjust=True, progress=False, threads=True,
+            )
+            if raw is None or raw.empty:
+                continue
+            for sym in chunk:
+                sym_key, data = _parse_sym_daily(sym, raw, single)
+                if data:
+                    result[sym_key] = data
+        except Exception as e:
+            _log.warning(f"Daily batch download chunk {i}: {e}")
     return result
 
 
@@ -298,34 +307,6 @@ def load_yf_quotes(symbols: tuple) -> dict[str, dict]:
                     continue
         except Exception as e:
             _log.warning(f"yf batch quote error chunk {i}: {e}")
-    return result
-
-
-# ── previous close (daily data gives accurate prev close) ─────────────────────
-
-@st.cache_data(ttl=3_600, show_spinner=False)
-def load_prev_close(symbols: tuple) -> dict[str, float]:
-    """Get previous session's close for accurate % change."""
-    result: dict[str, float] = {}
-    yf_syms = " ".join(s + ".NS" for s in symbols)
-    try:
-        raw = yf.download(yf_syms.split(), period="5d", interval="1d",
-                          auto_adjust=True, progress=False)
-        if raw is None or raw.empty:
-            return result
-        single = len(symbols) == 1
-        for sym in symbols:
-            sym_yf = sym + ".NS"
-            try:
-                close_s = (raw["Close"] if single else raw["Close"][sym_yf]).dropna()
-                if len(close_s) >= 2:
-                    result[sym] = float(close_s.iloc[-2])  # yesterday's close
-                elif len(close_s) == 1:
-                    result[sym] = float(close_s.iloc[-1])
-            except Exception:
-                pass
-    except Exception:
-        pass
     return result
 
 
@@ -474,7 +455,6 @@ def fundamental_filter(df: pd.DataFrame, enabled: bool,
 
 def build_intraday_df(quotes: dict[str, dict],
                       daily_data: dict[str, dict],
-                      prev_closes: dict[str, float],
                       news_data: dict[str, dict] | None = None,
                       vwap_15_data: dict[str, dict] | None = None) -> pd.DataFrame:
     rows = []
@@ -482,9 +462,10 @@ def build_intraday_df(quotes: dict[str, dict],
         try:
             ltp        = float(q["last_price"])
             ohlc       = q.get("ohlc", {})
-            prev_close = prev_closes.get(sym, float(ohlc.get("close", 0)))
             volume     = float(q.get("volume", 0))
             d          = daily_data.get(sym, {})
+            # prev_close: from daily data (accurate yesterday close) or day open fallback
+            prev_close = d.get("prev_close") or float(ohlc.get("close", 0))
             avg_vol    = d.get("avg_vol", 0)
             rsi        = d.get("rsi", 50.0)
             if prev_close <= 0 or ltp <= 0:
@@ -831,6 +812,23 @@ with st.sidebar:
     UNIVERSE_CHOICE = st.selectbox("Stock universe", ["Nifty F&O", "Nifty 500"],
                                    key="free_universe")
 
+    def _on_free_strategy_change() -> None:
+        s  = st.session_state["free_k_strategy"]
+        sk = s.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "") + "_free"
+        is_swing = s == "Swing Trade (3-5 day)"
+        is_bp    = s == "Buying Pressure"
+        is_mom   = s == "Momentum (already moving)"
+        is_vol   = s in ("Momentum (already moving)", "Range Breakout (5-day)", "Buying Pressure")
+        st.session_state[f"k_pct_on_{sk}"]  = is_mom
+        st.session_state[f"k_vol_on_{sk}"]  = is_vol
+        st.session_state[f"k_rsi_on_{sk}"]  = is_swing
+        st.session_state[f"k_rsi_rng_{sk}"] = (50, 72) if is_swing else (30, 70)
+        st.session_state[f"k_vwap_on_{sk}"] = False
+        st.session_state[f"k_bs_on_{sk}"]   = is_bp
+        st.session_state[f"k_ema21_{sk}"]   = is_swing
+        st.session_state[f"k_ema50_{sk}"]   = is_swing
+        st.session_state[f"k_ema200_{sk}"]  = is_swing
+
     st.subheader("Strategy")
     STRATEGY = st.selectbox(
         "Select strategy",
@@ -839,17 +837,8 @@ with st.sidebar:
          "Range Breakout (5-day)", "Custom (manual filters)"],
         index=0,
         key="free_k_strategy",
+        on_change=_on_free_strategy_change,
     )
-
-    # Reset filter defaults when strategy changes
-    _prev = st.session_state.get("_free_prev_strategy")
-    if _prev != STRATEGY:
-        if _prev:
-            _old_sk = _prev.replace(" ", "_").replace("(","").replace(")","").replace("-","")
-            for _k in [k for k in st.session_state if k.endswith(f"_{_old_sk}_free")]:
-                del st.session_state[_k]
-        st.session_state["_free_prev_strategy"] = STRATEGY
-        st.rerun()
 
     _STRATEGY_DESC = {
         "Swing Trade (3-5 day)":        "EMA aligned + RSI 50-65 + volume + near 52W high.",
@@ -978,9 +967,6 @@ def main() -> None:
     else:
         quotes = st.session_state.get("_free_quotes_cache", {})
 
-    with st.spinner("Loading previous close prices…"):
-        prev_closes = load_prev_close(tuple(screened))
-
     with st.spinner("Loading 15-min VWAP (cached 5 min)…"):
         vwap_15_data = load_15min_vwap(tuple(screened))
 
@@ -990,7 +976,7 @@ def main() -> None:
     else:
         news_data = {}
 
-    intraday  = build_intraday_df(quotes, daily_data, prev_closes, news_data, vwap_15_data)
+    intraday  = build_intraday_df(quotes, daily_data, news_data, vwap_15_data)
 
     tech_pass = technical_filter(
         intraday,
