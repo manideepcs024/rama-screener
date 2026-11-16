@@ -659,6 +659,17 @@ with st.sidebar:
         key="k_strategy",
     )
 
+    # When strategy changes, wipe scoped widget keys so defaults reset correctly
+    _prev_strategy = st.session_state.get("_prev_strategy")
+    if _prev_strategy != STRATEGY:
+        if _prev_strategy:
+            _old_sk = _prev_strategy.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "")
+            _keys_to_clear = [k for k in st.session_state if k.endswith(f"_{_old_sk}")]
+            for _k in _keys_to_clear:
+                del st.session_state[_k]
+        st.session_state["_prev_strategy"] = STRATEGY
+        st.rerun()
+
     # ── strategy descriptions ─────────────────────────────────────────────────
     _STRATEGY_DESC = {
         "Swing Trade (3-5 day)":
